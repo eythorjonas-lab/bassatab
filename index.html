@@ -2,7 +2,7 @@
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-slTUMjkWg5e309Regq01OZXUbuntRY6SIhoRJK6O/Uc=' 'sha256-SRM6k/spdjsSkAk46hHCZ4o6s4JHKSQUs4bb19B7b58=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-9u+kFTvGeiM+PIHOyhwRn8wb6qinkmaDg1wSU5HVI+8=' 'sha256-me5RCOT2nhhO6Uui+rGuPMoMujwSxZ5zUQIJj30QR84=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bassatab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -274,7 +274,7 @@ html.vv{height:var(--vvh)}
 @media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
 </style>
 
-<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "8a9644e";</script>
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "b1b41eb";</script>
 </head>
 <body>
 <div id="app">
@@ -856,7 +856,7 @@ function render(){
   }
   sheet.style.fontSize = S.fontPx + 'px';
   if (!S.song.raw.trim()) html = S.song.pending
-    ? '<div class="empty" style="font-family:var(--ui)"><b>Sæki tabið af hlekknum…</b><br>Claude á Macanum þínum sækir það og setur það inn, oftast innan 15 mínútna. Tabið birtist hér af sjálfu sér, líka í símanum.<br><br>Claude-appið þarf að vera opið á Macanum.</div>'
+    ? '<div class="empty" style="font-family:var(--ui)">Tabið vantar í þetta lag.<br>Ýttu á blýantinn og settu tabið inn: líma, skrá, mynd eða „Senda í Bassatab“.</div>'
     : S.song.fetchError ? '<div class="empty" style="font-family:var(--ui)"><b>Ekki tókst að sækja tabið.</b><br>' + esc(String(S.song.fetchError)) + '<br><br>Ýttu á blýantinn og límdu tabið eða notaðu skjáskot.</div>'
     : '<div class="empty" style="font-family:var(--ui)">Ekkert tab er í þessu lagi ennþá.<br>Ýttu á blýantinn efst og límdu hlekk eða tabið sjálft.</div>';
   sheet.innerHTML = html || '<div class="empty">Ekkert tab ennþá. Ýttu á blýantinn til að líma inn.</div>';
@@ -1264,7 +1264,7 @@ function openEditor(song){
 function saveEditor(){
   const raw = $('fRaw').value;
   const hasUrl = /^https?:\/\/\S+$/i.test($('fUrl').value.trim());
-  if (STANDALONE && !raw.trim()){
+  if (!raw.trim()){
     fetchMsg(hasUrl ? 'Símaappið getur ekki sótt af hlekk sjálft. Opnaðu síðuna, ýttu á „Senda í Bassatab“ bókamerkið og límdu tabið hér.' : 'Tabið vantar. Límdu tabið í stóra reitinn áður en þú vistar.', 'err');
     if (hasUrl) $('urlNote').hidden = false;
     $('fetchMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1279,7 +1279,7 @@ function saveEditor(){
   const data = {
     title: $('fTitle').value.trim() || 'Án titils', artist: $('fArtist').value.trim(), url: $('fUrl').value.trim(), raw: clean(raw),
     bpm: Math.max(20, Math.min(320, parseInt($('fBpm').value, 10) || 100)), bpb: Math.max(1, Math.min(16, parseInt($('fBpb').value, 10) || 4)), updated: Date.now(),
-    pending: !raw.trim() && hasUrl, fetchError: ''
+    pending: false, fetchError: ''
   };
   let folder = $('fFolder').value;
   if (folder === '__new'){ folder = $('fFolderNew').value.trim().slice(0, 40); if (folder && !FMETA.folders.includes(folder)){ FMETA.folders.push(folder); saveFolders(); } }
@@ -1339,7 +1339,7 @@ async function fetchFromUrl(){
     const code = e && e.code;
     $('urlNote').hidden = false;
     if (code === 'no_mcp' || code === 'server_not_connected' || code === 'capability_disabled' || code === 'unavailable')
-      fetchMsg('Ýttu bara á „Vista og spila“. Claude á Macanum þínum sækir tabið af hlekknum og setur það inn, oftast innan 15 mínútna.', 'ok');
+      fetchMsg('Hér getur appið ekki opnað síðuna sjálft. Notaðu „Senda í Bassatab“ bókamerkið, skjáskot, eða afritaðu og límdu tabið.', 'err');
     else if (code === 'not_granted' || code === 'consent_required')
       fetchMsg('Appið fékk ekki leyfi til að nota vafrann. Ýttu aftur á „Sækja tab“ og veldu Leyfa.', 'err');
     else fetchMsg('Ekki tókst að sækja síðuna' + (code ? ' (' + code + ')' : '') + '. Notaðu skjáskot í staðinn, sjá skrefin hér fyrir neðan.', 'err');
