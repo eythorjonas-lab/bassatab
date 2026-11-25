@@ -2,7 +2,7 @@
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-9J8OkFHWiYP82c0ZQmPwwj7MRVz3kUaZs6A7lag8H1s=' 'sha256-f6S/scSIGu1D7QI0jLxISjryBXeHKtvaz7pFBh5ul18=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-wVpIAdEdmvwimBjX0w7Bh2ezh0A6mUYFZNyKrPkcdF4=' 'sha256-VjLvblOIYXmX00bUdsnzyMYm9T5scBK7lEkqkdfWlpA=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bassatab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -276,7 +276,7 @@ html.vv{height:var(--vvh)}
 @media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
 </style>
 
-<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "dd65795";</script>
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "b7d3164";</script>
 </head>
 <body>
 <div id="app">
@@ -414,11 +414,9 @@ E|------------|-1--1-1-3---|"></textarea>
     <div class="row"><span>Útlit<small id="gLookNote">Ljóst eins og pappír, eða dökkt allt appið</small></span><div class="segw" role="group" aria-label="Útlit"><button id="gLkPaper">Ljóst</button><button id="gLkDark">Dökkt</button></div></div>
     <label class="row" for="gBassVol"><span>Styrkur bassans</span><input type="range" id="gBassVol" min="0" max="100" step="5" value="80"></label>
     <div class="row"><span>„Senda í Bassatab“<small>Bókamerki sem sækir tab af síðum eins og Ultimate Guitar</small></span><button class="btn" id="bmOpen">Setja upp</button></div>
-    <div class="row claude-only"><span>Færa lögin í símaappið<small>Afritar öll lögin. Opnaðu svo Bassatab á heimaskjánum → Stillingar → „Sækja lögin“.</small></span><button class="btn primary" id="mvCopy">Afrita lögin</button></div>
-    <div class="row solo-only-row"><span>Sækja lögin úr Claude<small>Í Claude-útgáfunni: Stillingar → „Afrita lögin“. Komdu svo hingað og ýttu á Sækja.</small></span><button class="btn primary" id="mvPaste">Sækja</button></div>
+    <div class="row"><span>Senda lögin<small>Vistar öll lögin í eina skrá, bassatab-log.json. Opnaðu hana svo í hinu appinu. Þetta er líka öryggisafrit.</small></span><button class="btn primary" id="xSend">Senda</button></div>
+    <div class="row"><span>Taka á móti lögum<small>Veldu skrána, eða límdu lögin. Lög sem eru til uppfærast og ný bætast við.</small></span><button class="btn primary" id="xRecv">Taka á móti</button></div>
     <div class="msg" id="mvMsg"></div>
-    <div class="row"><span>Öryggisafrit<small>Afritar öll lögin sem texta. Geymdu það t.d. í Glósum.</small></span><button class="btn" id="bkCopy">Afrita</button></div>
-    <div class="row"><span>Lesa inn afrit<small>Úr texta eða skrá</small></span><button class="btn" id="bkOpen">Lesa inn</button></div>
     <div class="row"><span>Geymsla<small id="syncSt" class="syncst">Tengist…</small></span></div>
     <div class="row solo-only-row"><span>Á heimaskjáinn<small>Í Safari: Deila-táknið → „Bæta á heimaskjá“. Opnaðu Bassatab alltaf þaðan.</small></span></div>
     <p class="msg" id="verInfo" style="margin:6px 0 0"></p>
@@ -445,13 +443,17 @@ E|------------|-1--1-1-3---|"></textarea>
 
 <!-- Backup import -->
 <div class="sheetbg" id="bkBg" hidden>
-  <div class="sheetp" role="dialog" aria-label="Lesa inn afrit">
-    <h3>Lesa inn afrit</h3>
-    <p class="msg" id="bkHelp" style="margin:0 0 8px">Límdu öryggisafritið hér eða veldu skrá. Lög sem eru þegar til uppfærast, ný bætast við.</p>
-    <textarea id="bkText" spellcheck="false" aria-label="Öryggisafrit"></textarea>
-    <input type="file" id="bkFile" accept=".json,.txt,application/json,text/plain" style="margin:10px 0">
+  <div class="sheetp" role="dialog" aria-label="Taka á móti lögum">
+    <h3>Taka á móti lögum</h3>
+    <p class="msg" id="bkHelp" style="margin:0 0 10px">Veldu skrána bassatab-log.json, eða límdu lögin ef þú afritaðir þau.</p>
+    <div class="ways" style="margin-bottom:10px">
+      <label class="way" for="bkFile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/></svg><b>Velja skrá</b></label>
+      <button type="button" class="way" id="bkPaste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6"/></svg><b>Líma</b></button>
+    </div>
+    <input type="file" id="bkFile" accept=".json,.txt,application/json,text/plain" hidden>
+    <textarea id="bkText" spellcheck="false" aria-label="Lögin sem texta" placeholder="…eða haltu fingri hér og veldu Líma"></textarea>
     <div class="msg" id="bkMsg"></div>
-    <div class="actions"><span class="sp"></span><button class="btn" id="bkClose">Loka</button><button class="btn primary" id="bkDo">Lesa inn</button></div>
+    <div class="actions"><span class="sp"></span><button class="btn" id="bkClose">Loka</button><button class="btn primary" id="bkDo">Taka á móti</button></div>
   </div>
 </div>
 
@@ -1632,8 +1634,10 @@ $('gLkDark').onclick = () => { PREFS.look = 'dark'; savePrefs(); applyLook(); sy
 $('gBassVol').oninput = () => { PREFS.bassVol = +$('gBassVol').value / 100; savePrefs(); };
 /* Move songs from the Claude version to the phone app through the clipboard */
 function importBackup(text){
-  const d = JSON.parse(text); const arr = Array.isArray(d) ? d : d && d.songs;
+  const t = String(text || ''); const k = t.indexOf('{'), l = t.lastIndexOf('}');
+  const d = JSON.parse(k >= 0 && l > k && !t.trim().startsWith('[') ? t.slice(k, l + 1) : t); const arr = Array.isArray(d) ? d : d && d.songs;
   if (!Array.isArray(arr)) throw new Error('bad');
+  if (d && Array.isArray(d.folders)) d.folders.forEach(f => { if (typeof f === 'string' && f.trim() && !FMETA.folders.includes(f.slice(0, 40))) FMETA.folders.push(f.slice(0, 40)); });
   let added = 0, upd = 0;
   arr.forEach(s0 => {
     if (!s0 || typeof s0 !== 'object' || typeof s0.raw !== 'string') return;
@@ -1647,26 +1651,50 @@ function importBackup(text){
   persist(); renderLib();
   return { added, upd };
 }
-async function pasteSongs(msgEl){
-  try {
-    const t = await navigator.clipboard.readText();
-    const r = importBackup(t);
-    msgEl.textContent = r.added + r.upd ? 'Komið: ' + r.added + ' ný lög' + (r.upd ? ', ' + r.upd + ' uppfærð' : '') + '.' : 'Engin lög fundust í því sem var afritað.';
 
-  } catch(e){
-    msgEl.textContent = '';
-    $('bkText').value = ''; $('bkMsg').textContent = '';
-    $('bkHelp').textContent = 'Haltu fingri í reitnum hér fyrir neðan, veldu „Líma“ og ýttu svo á „Lesa inn“. (Fyrst: „Afrita lögin“ í Claude-útgáfunni.)';
-    $('bkBg').hidden = false; setTimeout(() => $('bkText').focus(), 50);
-  }
+
+
+/* ---------- Senda / taka á móti lögum: one file, works between the Claude version, the phone app and other phones ---------- */
+const lagOrd = n => n % 10 === 1 && n % 100 !== 11 ? ' lag' : ' lög';
+function openRecv(text, help){
+  $('bkText').value = text || ''; $('bkMsg').textContent = '';
+  $('bkHelp').textContent = help || 'Veldu skrána bassatab-log.json, eða límdu lögin ef þú afritaðir þau.';
+  $('bkBg').hidden = false;
 }
-$('mvPaste').onclick = () => pasteSongs($('mvMsg'));
-
-$('mvCopy').onclick = async () => {
-  const songs = S.songs.filter(s => !s.example);
-  const txt = JSON.stringify({ app: 'bassatab', v: 1, songs: songs.map(bodyOf) });
-  try { await navigator.clipboard.writeText(txt); $('mvMsg').textContent = songs.length + ' lög afrituð. Opnaðu nú Bassatab á heimaskjánum → Stillingar → Sækja.'; }
-  catch(e){ $('bkBg').hidden = false; $('bkText').value = txt; $('bkText').select(); $('bkMsg').textContent = 'Afritaðu þennan texta (allan) og límdu hann í „Lesa inn afrit“ í símaappinu.'; }
+async function sendSongs(){
+  const songs = S.songs.filter(s => !s.example).map(bodyOf), n = songs.length, msg = $('mvMsg'), name = 'bassatab-log.json';
+  if (!n){ msg.textContent = 'Engin lög til að senda ennþá.'; return; }
+  const json = JSON.stringify({ app: 'bassatab', v: 1, folders: FMETA.folders, songs });
+  const after = ' Í hinu appinu: Stillingar → Taka á móti lögum → Velja skrá.';
+  try {                                   // phone app / Safari: iPhone share sheet (Vista í Skrár, AirDrop, Skilaboð)
+    const file = new File([json], name, { type: 'application/json' });
+    if (STANDALONE && navigator.canShare && navigator.canShare({ files: [file] })){ await navigator.share({ files: [file], title: 'Bassatab lög' }); msg.textContent = n + lagOrd(n) + ' send sem skráin ' + name + '.' + after; return; }
+  } catch(e){ if (e && e.name === 'AbortError') return; }
+  try {                                   // Claude version: save the file
+    const dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
+    if (dl){ await dl.save({ filename: name, data: json }); msg.textContent = n + lagOrd(n) + ' vistuð í skránni ' + name + '.' + after; return; }
+  } catch(e){ if (e && /cancel|declin|abort/i.test(String(e.code || e.name || ''))) return; }
+  if (!window.claude){                    // plain browser: download
+    try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); msg.textContent = n + lagOrd(n) + ' vistuð í skránni ' + name + '.' + after; return; } catch(e){}
+  }
+  try { await navigator.clipboard.writeText(json); msg.textContent = n + lagOrd(n) + ' afrituð. Í hinu appinu: Stillingar → Taka á móti lögum → Líma.'; return; } catch(e){}
+  openRecv(json, 'Haltu fingri í textanum, veldu „Velja allt“ og svo „Afrita“. Límdu hann svo í hinu appinu.');
+}
+function receiveText(text){
+  try {
+    const r = importBackup(text);
+    if (!(r.added + r.upd)) throw 0;
+    $('bkMsg').textContent = 'Komið: ' + r.added + (r.added === 1 ? ' nýtt lag' : ' ný lög') + (r.upd ? ', ' + r.upd + ' uppfærð' : '') + '.';
+    $('mvMsg').textContent = '';
+    setTimeout(() => { $('bkBg').hidden = true; $('gsetBg').hidden = true; }, 1100);
+  } catch(e){ $('bkMsg').textContent = 'Fann engin lög í þessu. Notaðu skrána bassatab-log.json úr „Senda lögin“.'; }
+}
+$('xSend').onclick = sendSongs;
+$('xRecv').onclick = () => openRecv('');
+$('bkFile').onchange = () => { const f = $('bkFile').files[0]; if (!f) return; f.text().then(t => { $('bkText').value = t; receiveText(t); }).finally(() => { $('bkFile').value = ''; }); };
+$('bkPaste').onclick = async () => {
+  try { const t = await navigator.clipboard.readText(); $('bkText').value = t; receiveText(t); }
+  catch(e){ $('bkMsg').textContent = 'Síminn leyfði ekki að líma beint. Haltu fingri í reitnum, veldu „Líma“ og ýttu svo á „Taka á móti“.'; $('bkText').focus(); }
 };
 function syncGeneral(){
   $('gLkPaper').setAttribute('aria-pressed', PREFS.look === 'paper'); $('gLkDark').setAttribute('aria-pressed', PREFS.look !== 'paper');
@@ -1695,6 +1723,10 @@ $('fUrl').oninput = () => {
   if (info.artist && !$('fArtist').value) $('fArtist').value = info.artist;
 };
 let sumT; $('fRaw').oninput = () => {
+  const pv = $('fRaw').value;
+  if (/"app"\s*:\s*"bassatab"/.test(pv) && /"songs"\s*:/.test(pv)){
+    try { const r = importBackup(pv); if (r.added + r.upd){ $('fRaw').value = ''; show('vLib'); renderLib(); return; } } catch(e){}
+  }
   takeBookmarkletPaste();
   const v = $('fRaw').value.trim();
   if (!S.editing && !$('fBpm').dataset.touched){ const t = tempoOf(v); $('fBpm').value = t || 80; }
@@ -1783,23 +1815,9 @@ $('tapBtn').onclick = () => {
 };
 
 /* Backup */
-$('bkCopy').onclick = async () => {
-  const txt = JSON.stringify({ app: 'bassatab', v: 1, songs: S.songs });
-  try { await navigator.clipboard.writeText(txt); $('bkCopy').textContent = 'Afritað ✓ (' + S.songs.length + ' lög)'; }
-  catch(e){ $('bkBg').hidden = false; $('bkText').value = txt; $('bkText').select(); $('bkMsg').textContent = 'Ekki tókst að afrita sjálfkrafa. Textinn er valinn, afritaðu hann handvirkt.'; }
-  setTimeout(() => { $('bkCopy').textContent = 'Afrita'; }, 2500);
-};
-$('bkOpen').onclick = () => { $('bkText').value = ''; $('bkMsg').textContent = ''; $('bkHelp').textContent = 'Límdu öryggisafritið hér eða veldu skrá. Lög sem eru þegar til uppfærast, ný bætast við.'; $('bkBg').hidden = false; };
-$('bkClose').onclick = () => { $('bkBg').hidden = true; };
-$('bkFile').onchange = () => { const f = $('bkFile').files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $('bkText').value = r.result; }; r.readAsText(f); };
-$('bkDo').onclick = () => {
-  try {
-    const r = importBackup($('bkText').value.trim());
-    if (!(r.added + r.upd)) throw 0;
 
-    $('bkMsg').textContent = 'Komið: ' + r.added + ' ný lög' + (r.upd ? ', ' + r.upd + ' uppfærð' : '') + '. Ýttu á Loka.';
-  } catch(e){ $('bkMsg').textContent = 'Þetta er ekki gilt afrit. Ýttu á „Afrita lögin“ í Claude-útgáfunni og límdu svo allan textann hér.'; }
-};
+$('bkClose').onclick = () => { $('bkBg').hidden = true; };
+$('bkDo').onclick = () => receiveText($('bkText').value);
 
 /* Keyboard (tölva) */
 document.addEventListener('keydown', e => {
