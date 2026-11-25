@@ -2,7 +2,7 @@
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-5lUNZx1Q8Jdpc4ecCFYzLIz9xaW0JlW3wndqEAQwIK0=' 'sha256-DqlxjVa+J0nwCVJqAoax1k8ta0djFfI24dXKa0cxS4E=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-ir9cj4tth5hJBCovrt+UaSgETjXtcPqY3QfqKbbKn+I=' 'sha256-0FHwpQZXGu0crg3fi2Dg4UByzryojWj3HacXA0fV7rI=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bassatab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -239,9 +239,12 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .chip svg{width:14px;height:14px}
 .chip-new{border:1px dashed var(--line);background:none}
 .chipin{flex:none;height:36px;width:170px;border-radius:999px;border:1px solid var(--accent);background:var(--panel);padding:0 14px}
-.songrow{display:flex;align-items:stretch;border-top:1px solid var(--line)}
+.songrow{position:relative;overflow:hidden;border-top:1px solid var(--line);touch-action:pan-y}
 .songrow:first-child{border-top:0}
+.rowin{display:flex;align-items:stretch;background:var(--panel);position:relative;z-index:1;transition:transform .2s ease;will-change:transform}
 .songrow .song{border-top:0;flex:1;min-width:0}
+.swipedel{position:absolute;top:0;right:0;bottom:0;width:96px;background:var(--danger);color:#fff;font-weight:700;font-size:15px}
+@media (hover:none){.del{display:none}}
 .star{width:48px;flex:none;display:grid;place-items:center;color:var(--dim)}
 .star svg{width:22px;height:22px;fill:none}
 .star[aria-pressed="true"]{color:var(--accent)}
@@ -277,7 +280,7 @@ html.vv{height:var(--vvh)}
 @media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
 </style>
 
-<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "e683155";</script>
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "b92d490";</script>
 </head>
 <body>
 <div id="app">
@@ -292,8 +295,6 @@ html.vv{height:var(--vvh)}
       <button class="btn primary" id="newBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nýtt tab</button>
     </header>
     <div class="scroll"><div class="wrap">
-      <div class="note" id="moveTip" hidden style="margin-bottom:14px"><b>Ertu með lög í Claude-útgáfunni?</b><br>Opnaðu hana, farðu í Stillingar (tannhjólið) og ýttu á „Afrita lögin“. Komdu svo hingað og ýttu á <b>Sækja lögin</b>.<div style="margin-top:10px"><button class="btn primary" id="mvPaste2">Sækja lögin</button></div></div>
-      <div class="note" id="installTip" hidden style="margin-bottom:14px"><b>Settu Bassatab á heimaskjáinn</b><br>Ýttu á Deila-táknið (ferningur með ör) í Safari og veldu „Bæta á heimaskjá“. Opnaðu Bassatab alltaf þaðan eftir það: þá virkar það án nets og lögin geymast í því.</div>
       <input class="search" id="q" type="search" placeholder="Leita að lagi eða flytjanda" aria-label="Leita">
       <div class="chips" id="chips" role="group" aria-label="Möppur"></div>
       <div class="list" id="list"></div>
@@ -383,7 +384,7 @@ E|------------|-1--1-1-3---|"></textarea>
         <button class="v" id="bpmV" aria-label="Stillingar tempós"><b id="bpmVal">100</b><small id="bpmSub">BPM</small></button>
         <button id="bpmUp" aria-label="Hraða">+</button>
       </div>
-      <button class="ib" id="bSet" aria-label="Stillingar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+      <button class="ib" id="bSet" aria-label="Stillingar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
     </footer>
   </section>
 </div>
@@ -423,6 +424,7 @@ E|------------|-1--1-1-3---|"></textarea>
     <div class="row"><span>Öryggisafrit<small>Afritar öll lögin sem texta. Geymdu það t.d. í Glósum.</small></span><button class="btn" id="bkCopy">Afrita</button></div>
     <div class="row"><span>Lesa inn afrit<small>Úr texta eða skrá</small></span><button class="btn" id="bkOpen">Lesa inn</button></div>
     <div class="row"><span>Geymsla<small id="syncSt" class="syncst">Tengist…</small></span></div>
+    <div class="row solo-only-row"><span>Á heimaskjáinn<small>Í Safari: Deila-táknið → „Bæta á heimaskjá“. Opnaðu Bassatab alltaf þaðan.</small></span></div>
     <p class="msg" id="verInfo" style="margin:6px 0 0"></p>
     <button class="btn primary wide" id="gsetClose" style="margin-top:10px">Loka</button>
   </div>
@@ -1124,9 +1126,7 @@ async function startSync(){
   if (STANDALONE){
     syncStatus('Lögin eru geymd í þessum síma, líka án nets.', true);
     try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
-    const inApp = (navigator.standalone === true) || matchMedia('(display-mode: standalone)').matches;
-    $('installTip').hidden = inApp;
-    $('moveTip').hidden = S.songs.some(s => !s.example);
+
     return;
   }
   let db = null, user = null;
@@ -1204,9 +1204,9 @@ function renderLib(){
     .filter(s => !q || (s.title + ' ' + s.artist).toLowerCase().includes(q))
     .filter(s => f === 'all' || (f === 'fav' ? s.fav : s.folder === f.slice(2)));
   $('list').innerHTML = list.length ? list.map(s =>
-    '<div class="songrow"><button class="song" data-id="' + esc(s.id) + '"><span class="st"><b>' + esc(s.title || 'Án titils') + (s.example ? '<span class="tag">Dæmi</span>' : '') + (s.pending && !s.raw ? '<span class="tag">Sæki tab…</span>' : '') + '</b><span>' + esc(s.artist || '—') + (s.folder && !f.startsWith('f:') ? ' · ' + esc(s.folder) : '') + '</span></span><span class="meta">' + esc(s.bpm) + ' BPM<br>' + esc(s.bpb) + '/4</span></button>'
+    '<div class="songrow"><button class="swipedel" data-swdel="' + esc(s.id) + '" tabindex="-1">Eyða</button><div class="rowin"><button class="song" data-id="' + esc(s.id) + '"><span class="st"><b>' + esc(s.title || 'Án titils') + (s.example ? '<span class="tag">Dæmi</span>' : '') + (s.pending && !s.raw ? '<span class="tag">Sæki tab…</span>' : '') + '</b><span>' + esc(s.artist || '—') + (s.folder && !f.startsWith('f:') ? ' · ' + esc(s.folder) : '') + '</span></span><span class="meta">' + esc(s.bpm) + ' BPM<br>' + esc(s.bpb) + '/4</span></button>'
     + (S.delArm === s.id ? '<button class="del arm" data-del="' + esc(s.id) + '" aria-label="Staðfesta: eyða laginu">Eyða?</button>' : '<button class="del" data-del="' + esc(s.id) + '" aria-label="Eyða laginu ' + esc(s.title || '') + '">' + TRASH_SVG + '</button>')
-    + '<button class="star" data-star="' + esc(s.id) + '" aria-pressed="' + !!s.fav + '" aria-label="' + (s.fav ? 'Taka úr uppáhalds' : 'Setja í uppáhalds') + '">' + STAR_SVG + '</button></div>'
+    + '<button class="star" data-star="' + esc(s.id) + '" aria-pressed="' + !!s.fav + '" aria-label="' + (s.fav ? 'Taka úr uppáhalds' : 'Setja í uppáhalds') + '">' + STAR_SVG + '</button></div></div>'
   ).join('') : '<div class="empty">' + (q ? 'Ekkert lag passar við leitina.' : f === 'fav' ? 'Engin uppáhaldslög ennþá. Ýttu á stjörnuna við lag.' : f.startsWith('f:') ? 'Þessi mappa er tóm. Opnaðu lag, ýttu á blýantinn og veldu möppuna, eða búðu til nýtt tab hér.' : 'Ekkert tab ennþá. Ýttu á „Nýtt tab“ og límdu inn.') + '</div>';
   const fa = $('folderAct');
   if (f.startsWith('f:')){
@@ -1545,7 +1545,41 @@ function openBm(e){ if (e) e.preventDefault(); $('bmCode').value = BOOKMARKLET; 
 /* ---------- events ---------- */
 $('newBtn').onclick = () => openEditor(null);
 $('q').oninput = renderLib;
+/* Swipe a song to the left to show "Eyða"; tap it to delete (like Mail on iPhone) */
+(() => {
+  const list = $('list'); let sw = null;
+  const closeAll = keep => list.querySelectorAll('.rowin.open').forEach(r => { if (r !== keep){ r.classList.remove('open'); r.style.transform = ''; } });
+  list.addEventListener('touchstart', e => {
+    const r = e.target.closest('.rowin'); if (!r) return;
+    const t = e.touches[0]; sw = { r, x: t.clientX, y: t.clientY, dx: 0, lock: null, base: r.classList.contains('open') ? -96 : 0 };
+  }, { passive: true });
+  list.addEventListener('touchmove', e => {
+    if (!sw) return;
+    const t = e.touches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y;
+    if (!sw.lock && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) sw.lock = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    if (sw.lock !== 'x') return;
+    e.preventDefault(); sw.dx = dx; sw.r.style.transition = 'none';
+    sw.r.style.transform = 'translateX(' + Math.min(0, Math.max(-150, sw.base + dx)) + 'px)';
+  }, { passive: false });
+  const end = () => {
+    if (!sw) return; const r = sw.r; r.style.transition = '';
+    if (sw.lock === 'x'){
+      S.swipedAt = Date.now(); closeAll(r);
+      if (sw.base + sw.dx < -44){ r.classList.add('open'); r.style.transform = 'translateX(-96px)'; }
+      else { r.classList.remove('open'); r.style.transform = ''; }
+    }
+    sw = null;
+  };
+  list.addEventListener('touchend', end); list.addEventListener('touchcancel', end);
+  S.closeSwipes = closeAll;
+})();
 $('list').onclick = e => {
+  if (S.swipedAt && Date.now() - S.swipedAt < 400) return;
+  const sd = e.target.closest('[data-swdel]');
+  if (sd){ const id = sd.dataset.swdel; removeRemote(id); S.songs = S.songs.filter(x => x.id !== id); persist(); renderLib(); return; }
+  const open = e.target.closest('.rowin.open');
+  if (open){ S.closeSwipes(); return; }
+  if ($('list').querySelector('.rowin.open')){ S.closeSwipes(); return; }
   const dl = e.target.closest('[data-del]');
   if (dl){
     const id = dl.dataset.del; clearTimeout(S.delT);
@@ -1632,7 +1666,7 @@ async function pasteSongs(msgEl){
     const t = await navigator.clipboard.readText();
     const r = importBackup(t);
     msgEl.textContent = r.added + r.upd ? 'Komið: ' + r.added + ' ný lög' + (r.upd ? ', ' + r.upd + ' uppfærð' : '') + '.' : 'Engin lög fundust í því sem var afritað.';
-    if (r.added + r.upd) $('moveTip').hidden = true;
+
   } catch(e){
     msgEl.textContent = '';
     $('bkText').value = ''; $('bkMsg').textContent = '';
@@ -1641,7 +1675,7 @@ async function pasteSongs(msgEl){
   }
 }
 $('mvPaste').onclick = () => pasteSongs($('mvMsg'));
-$('mvPaste2').onclick = () => pasteSongs($('mvMsg'));
+
 $('mvCopy').onclick = async () => {
   const songs = S.songs.filter(s => !s.example);
   const txt = JSON.stringify({ app: 'bassatab', v: 1, songs: songs.map(bodyOf) });
@@ -1776,7 +1810,7 @@ $('bkDo').onclick = () => {
   try {
     const r = importBackup($('bkText').value.trim());
     if (!(r.added + r.upd)) throw 0;
-    $('moveTip').hidden = true;
+
     $('bkMsg').textContent = 'Komið: ' + r.added + ' ný lög' + (r.upd ? ', ' + r.upd + ' uppfærð' : '') + '. Ýttu á Loka.';
   } catch(e){ $('bkMsg').textContent = 'Þetta er ekki gilt afrit. Ýttu á „Afrita lögin“ í Claude-útgáfunni og límdu svo allan textann hér.'; }
 };
