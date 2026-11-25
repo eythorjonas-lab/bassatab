@@ -1,0 +1,1716 @@
+<!doctype html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Bassatab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bassatab">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161c22" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: one-screen app. Library → Editor → Player. Player = top bar, tab stage, transport bar. */
+:root{
+  --bg:#0f1317; --panel:#161c22; --raise:#1f2730; --line:#2a343f;
+  --fg:#e9eef2; --muted:#8a97a4; --dim:#4c5864;
+  --accent:#f1b546; --accent-ink:#1b1305; --chord:#7cc5ff; --hl:rgba(241,181,70,.14);
+  --danger:#ff7d6e;
+  --ui:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --gx:max(16px, env(safe-area-inset-left, 0px));
+  --gy:max(16px, env(safe-area-inset-right, 0px));
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#f2f4f6; --panel:#ffffff; --raise:#e7ebef; --line:#d3dae1;
+  --fg:#141c24; --muted:#56636f; --dim:#a7b1bb;
+  --accent:#b06f00; --accent-ink:#ffffff; --chord:#1360a8; --hl:rgba(176,111,0,.12);
+  --danger:#c43a2a; color-scheme:light;
+}}
+:root[data-theme="light"]{
+  --bg:#f2f4f6; --panel:#ffffff; --raise:#e7ebef; --line:#d3dae1;
+  --fg:#141c24; --muted:#56636f; --dim:#a7b1bb;
+  --accent:#b06f00; --accent-ink:#ffffff; --chord:#1360a8; --hl:rgba(176,111,0,.12);
+  --danger:#c43a2a; color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);font-size:15px;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+*{box-sizing:border-box}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+#app{height:100%;display:flex;flex-direction:column}
+.view{flex:1;min-height:0;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:10px;padding-block:10px;padding-left:var(--gx);padding-right:var(--gy);background:var(--panel)}
+.bar.top{border-bottom:1px solid var(--line)}
+.bar.bottom{border-top:1px solid var(--line);padding-bottom:max(10px, env(safe-area-inset-bottom, 0px));position:relative;justify-content:space-between}
+.ib{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;color:var(--fg);flex:none}
+.ib:hover{background:var(--raise)}
+.ib[aria-pressed="true"]{background:var(--hl);color:var(--accent)}
+.ib svg{width:22px;height:22px}
+.btn{height:40px;padding:0 16px;border-radius:10px;background:var(--raise);font-weight:600;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn:hover{filter:brightness(1.08)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--danger)}
+.btn.wide{width:100%;justify-content:center}
+.btn svg{width:18px;height:18px}
+.scroll{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
+.wrap{max-width:760px;margin:0 auto;padding-block:20px 40px;padding-left:var(--gx);padding-right:var(--gy)}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* Library */
+.brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.brand svg{width:34px;height:34px;flex:none}
+.brand h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.search{width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);padding:0 14px;margin-bottom:14px}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+.song{display:flex;align-items:center;gap:12px;padding:14px 16px;text-align:left;border-top:1px solid var(--line);width:100%}
+.song:first-child{border-top:0}
+.song:hover{background:var(--raise)}
+.song .st{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.song b{font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.song .st span{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.song .meta{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:2px 6px;border-radius:5px;background:var(--hl);color:var(--accent);margin-left:6px;vertical-align:2px}
+.empty{padding:36px 20px;text-align:center;color:var(--muted)}
+.foot{margin-top:22px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.foot p{flex-basis:100%;color:var(--muted);font-size:13px;margin:0 0 4px}
+.syncst{display:flex;align-items:center;gap:8px}
+.syncst::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--dim);flex:none}
+.syncst.ok{color:var(--fg)}
+.syncst.ok::before{background:var(--accent)}
+
+/* Editor */
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--muted)}
+.field input{height:42px;border-radius:10px;border:1px solid var(--line);background:var(--panel);padding:0 12px;min-width:0}
+.field textarea{min-height:46vh;border-radius:12px;border:1px solid var(--line);background:var(--panel);padding:12px;font-family:var(--mono);font-size:13px;line-height:1.35;white-space:pre;overflow:auto;resize:vertical;tab-size:4}
+.note{border:1px solid var(--line);background:var(--raise);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.45;color:var(--fg)}
+.note a{color:var(--accent);font-weight:600}
+.note ol{margin:6px 0 8px;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.urlrow{display:flex;gap:8px}
+.urlrow input{flex:1;min-width:0}
+.urlrow .btn{height:42px}
+.fetchmsg{font-size:13px;color:var(--muted);min-height:1.2em}
+.fetchmsg.ok{color:var(--accent)}
+.fetchmsg.err{color:var(--danger)}
+.ways{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.way{display:flex;align-items:center;gap:10px;min-height:52px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);cursor:pointer;font-weight:600;text-align:left;line-height:1.2}
+.way:hover{border-color:var(--accent)}
+.way svg{width:22px;height:22px;color:var(--accent);flex:none}
+.way b{font-weight:600;min-width:0}
+.way,.field label.way{font-size:14px;color:var(--fg);font-weight:600}
+.way[aria-disabled="true"]{opacity:.6;pointer-events:none}
+.shot{display:flex;align-items:center;gap:14px;border:1px dashed var(--line);border-radius:12px;padding:12px 14px;background:var(--panel)}
+.shot>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.shot span{font-size:13px;color:var(--muted);line-height:1.4}
+.shot .btn{flex:none;cursor:pointer}
+.shot .btn[aria-disabled="true"]{opacity:.6;pointer-events:none}
+@media (max-width:520px){.shot{flex-direction:column;align-items:stretch}.shot .btn{justify-content:center}}
+.sum{font-size:13px;color:var(--muted);font-family:var(--mono);min-height:1.4em}
+.sum.ok{color:var(--accent)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.actions .sp{flex:1}
+@media (max-width:520px){.form{grid-template-columns:1fr 1fr}.field.half-m{grid-column:1/-1}}
+
+/* Player */
+.ttl{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.ttl b{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttl span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg{display:flex;background:var(--raise);border-radius:10px;padding:3px;flex:none}
+.seg button{height:34px;padding:0 11px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.25)}
+#stage{flex:1;min-height:0;overflow:auto;position:relative;-webkit-overflow-scrolling:touch}
+#stage.follow{padding-block:18px;padding-left:var(--gx);padding-right:var(--gy)}
+#stage.fit{padding:12px max(12px, env(safe-area-inset-left, 0px)) 12px max(12px, env(safe-area-inset-right, 0px))}
+#stage{--s-bg:var(--bg);--s-fg:var(--fg);--s-dim:var(--dim);--s-muted:var(--muted);--s-chord:var(--chord);--s-hdr:var(--accent);--s-hl:var(--hl);--s-cur:var(--accent);background:var(--s-bg);color:var(--s-fg);touch-action:pan-x pan-y}
+#stage.paper{--s-bg:#ffffff;--s-fg:#101317;--s-dim:#3d434b;--s-muted:#4b535d;--s-chord:#1554a0;--s-hdr:#101317;--s-hl:rgba(240,165,30,.24);--s-cur:#e08600;color-scheme:light}
+.dochead{font-family:var(--ui);margin:0 0 1.4em;padding-bottom:.9em;border-bottom:1px solid var(--s-dim);max-width:46rem}
+.dochead h2{font-size:1.7em;font-weight:500;margin:0;line-height:1.15;text-wrap:balance;color:var(--s-fg)}
+.dochead h2 b{font-weight:800}
+.dochead p{margin:.35em 0 0;font-size:.85em;color:var(--s-muted)}
+.sheet{font-family:var(--mono);line-height:1.32;font-variant-ligatures:none}
+.sheet.follow{max-width:100%}
+.sheet.follow::after{content:"";display:block;height:55vh}
+.sheet.fit{display:flex;gap:2.2em;justify-content:center;align-items:flex-start}
+.col{flex:none;min-width:0}
+.sheet.follow .col{max-width:100%}
+.unit{max-width:100%}
+.sheet.follow .unit{overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.unit.g-chunk{margin-top:.9em}
+.unit.g-small{margin-top:.3em}
+.col>.unit:first-child{margin-top:0}
+.ln{white-space:pre;min-height:1.32em}
+.ln.k-text,.ln.k-header{white-space:pre-wrap;overflow-wrap:anywhere}
+.k-header{color:var(--s-hdr);font-weight:700}
+.ln.k-rule{position:relative}
+.ln.k-rule::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--s-dim);opacity:.6}
+.k-text{color:var(--s-muted)}
+.k-count,.k-annot{color:var(--s-muted)}
+.k-annot .h{color:var(--s-hdr);font-weight:700}
+.k-chord{color:var(--s-chord);font-weight:700}
+.k-chord .c{color:var(--s-chord)}
+.k-tab{color:var(--s-dim)}
+.k-tab .n{color:var(--s-fg);font-weight:700}
+.k-tab .t{color:var(--s-muted)}
+.k-tab .lbl{color:var(--s-muted);font-weight:700}
+.stave{position:relative;width:max-content;cursor:pointer;border-radius:4px}
+.stave .cur,.stave .barhl{position:absolute;left:0;pointer-events:none;opacity:0}
+.stave .barhl{background:var(--s-hl);border-radius:3px}
+.stave .cur{width:2px;margin-left:-1px;background:var(--s-cur);box-shadow:0 0 10px var(--s-cur);border-radius:2px;will-change:transform}
+.stave.on .cur,.stave.on .barhl{opacity:1}
+.stave.loop{box-shadow:inset 3px 0 0 var(--s-cur)}
+.segw{display:flex;background:var(--raise);border-radius:10px;padding:3px}
+.segw button{height:34px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted)}
+.segw button[aria-pressed="true"]{background:var(--panel);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.prog{position:absolute;left:0;top:-1px;height:2px;background:var(--accent);width:0}
+.bpm{display:flex;align-items:center;background:var(--raise);border-radius:12px;height:46px}
+.bpm button{width:40px;height:46px;font-size:22px;font-weight:500;color:var(--fg);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.bpm .v{min-width:56px;text-align:center;display:flex;flex-direction:column;line-height:1.05}
+.bpm .v b{font-family:var(--mono);font-size:19px;font-variant-numeric:tabular-nums}
+.bpm .v small{font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:600;white-space:nowrap}
+.play{width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none;box-shadow:0 4px 18px rgba(241,181,70,.28)}
+.play svg{width:26px;height:26px}
+.tgroup{display:flex;align-items:center;gap:4px}
+#countBadge{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font:800 96px/1 var(--ui);color:var(--accent);pointer-events:none;text-shadow:0 4px 30px rgba(0,0,0,.4)}
+.hint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:6px 12px;border-radius:999px;white-space:nowrap;pointer-events:none;transition:opacity .4s}
+
+/* Sheet dialogs */
+.sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheetp{width:100%;max-width:520px;background:var(--panel);border-radius:18px 18px 0 0;padding-block:18px max(18px, env(safe-area-inset-bottom, 0px));padding-left:var(--gx);padding-right:var(--gy);display:flex;flex-direction:column;gap:4px;max-height:88%;overflow:auto;border:1px solid var(--line);border-bottom:0}
+@media (min-width:700px){.sheetbg{align-items:center}.sheetp{border-radius:18px;border-bottom:1px solid var(--line)}}
+.sheetp>*{flex-shrink:0}
+.sheetp h3{margin:0 0 6px;font-size:18px;font-weight:800}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;border-bottom:1px solid var(--line)}
+.row:last-of-type{border-bottom:0}
+.row>span{font-weight:500}
+.row small{display:block;color:var(--muted);font-size:12px;font-weight:400}
+.row input[type=range]{width:46%;accent-color:var(--accent)}
+.stepper{display:flex;align-items:center;gap:4px;background:var(--raise);border-radius:10px}
+.stepper button{width:40px;height:38px;font-weight:700}
+.stepper b{min-width:30px;text-align:center;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.sw{appearance:none;-webkit-appearance:none;width:48px;height:28px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--fg);transition:transform .2s}
+.sw:checked{background:var(--accent)}
+.sw:checked::after{transform:translateX(20px);background:var(--accent-ink)}
+.sheetp textarea{min-height:140px;border-radius:10px;border:1px solid var(--line);background:var(--bg);padding:10px;font-family:var(--mono);font-size:12px}
+.msg{font-size:13px;color:var(--muted);min-height:1.2em}
+.bmstep{border-top:1px solid var(--line);padding-top:10px;margin-top:6px;font-size:14px}
+.bmstep ol{margin:6px 0 4px;padding-left:20px;display:flex;flex-direction:column;gap:5px;line-height:1.4}
+.bmlink{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-weight:700;text-decoration:none;cursor:grab}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.song b{white-space:normal!important;overflow-wrap:anywhere}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:36px;padding:0 14px;border-radius:999px;background:var(--raise);font-weight:600;font-size:13px;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.chip svg{width:14px;height:14px}
+.chip-new{border:1px dashed var(--line);background:none}
+.chipin{flex:none;height:36px;width:170px;border-radius:999px;border:1px solid var(--accent);background:var(--panel);padding:0 14px}
+.songrow{display:flex;align-items:stretch;border-top:1px solid var(--line)}
+.songrow:first-child{border-top:0}
+.songrow .song{border-top:0;flex:1;min-width:0}
+.star{width:48px;flex:none;display:grid;place-items:center;color:var(--dim)}
+.star svg{width:22px;height:22px;fill:none}
+.star[aria-pressed="true"]{color:var(--accent)}
+.star[aria-pressed="true"] svg{fill:currentColor}
+.folderact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.field select{height:42px;border-radius:10px;border:1px solid var(--line);background:var(--panel);padding:0 10px;min-width:0;width:100%}
+.lbl-short{display:none}
+#pMode{display:none}
+.solo-only{display:none}
+.standalone .solo-only{display:revert}
+.standalone .claude-only{display:none!important}
+/* Inside the Claude phone app the page can reach below the visible screen, so on phones
+   the play bar sits right under the top bar and dialogs open from the top. */
+@media (max-width:700px), (max-height:500px){
+  #vPlay>header{order:0}
+  #vPlay>footer{order:1;border-top:0;border-bottom:1px solid var(--line);padding-bottom:10px}
+  #vPlay>#stage{order:2}
+  .sheetbg{align-items:flex-start}
+  .sheetp{border-radius:0 0 18px 18px;border-top:0;border-bottom:1px solid var(--line);max-height:80%;padding-top:14px}
+  .hint{bottom:auto;top:150px}
+  .prog{top:auto;bottom:-1px}
+}
+html.vv{height:var(--vvh)}
+@media (max-width:560px){input,textarea,select{font-size:16px!important}}
+.row>span{flex:1;min-width:0}
+@media (max-width:560px){.seg{display:none}#pMode{display:grid}.brand p{display:none}}
+@media (max-width:420px){.lbl-long{display:none}.lbl-short{display:inline}.bar{gap:6px}.bar.bottom{gap:2px}.ib{width:38px}.bpm button{width:34px}.bpm .v{min-width:46px}}
+@media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
+</style>
+
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "c90a1ac";</script>
+</head>
+<body>
+<div id="app">
+  <!-- LIBRARY -->
+  <section id="vLib" class="view">
+    <header class="bar top">
+      <div class="brand">
+        <svg viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="9" fill="var(--accent)"/><g stroke="var(--accent-ink)" stroke-width="1.6"><line x1="7" y1="10" x2="27" y2="10"/><line x1="7" y1="15" x2="27" y2="15"/><line x1="7" y1="20" x2="27" y2="20"/><line x1="7" y1="25" x2="27" y2="25"/></g><rect x="17" y="7" width="2.2" height="21" rx="1.1" fill="var(--accent-ink)"/></svg>
+        <div><h1>Bassatab</h1><p>Límdu tab, spilaðu á réttum hraða, ekkert skrun.</p></div>
+      </div>
+      <button class="ib" id="libSet" aria-label="Stillingar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+      <button class="btn primary" id="newBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nýtt tab</button>
+    </header>
+    <div class="scroll"><div class="wrap">
+      <div class="note" id="installTip" hidden style="margin-bottom:14px"><b>Settu Bassatab á heimaskjáinn</b><br>Ýttu á Deila-táknið (ferningur með ör) í Safari og veldu „Bæta á heimaskjá“. Opnaðu Bassatab alltaf þaðan eftir það: þá virkar það án nets og lögin geymast í því.</div>
+      <input class="search" id="q" type="search" placeholder="Leita að lagi eða flytjanda" aria-label="Leita">
+      <div class="chips" id="chips" role="group" aria-label="Möppur"></div>
+      <div class="list" id="list"></div>
+      <div class="folderact" id="folderAct" hidden></div>
+    </div></div>
+  </section>
+
+  <!-- EDITOR -->
+  <section id="vEdit" class="view" hidden>
+    <header class="bar top">
+      <button class="ib" id="eBack" aria-label="Til baka"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="ttl"><b id="eHead">Nýtt tab</b><span>Límdu tab af netinu, hljómar fylgja með</span></div>
+      <button class="btn primary" id="eSave"><span class="lbl-long">Vista og spila</span><span class="lbl-short">Vista</span></button>
+    </header>
+    <div class="scroll"><div class="wrap">
+      <div class="form">
+        <div class="field full">
+          <label>Hvernig viltu setja inn tabið?</label>
+          <div class="ways" id="dropZone">
+            <button type="button" class="way" id="wPaste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6"/></svg><b>Líma texta</b></button>
+            <label class="way" for="shotFile" id="shotBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg><b>Mynd eða skjáskot</b></label>
+            <label class="way" for="docFile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/></svg><b>Skrá eða PDF</b></label>
+            <button type="button" class="way" id="wLink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><b>Hlekkur af síðu</b></button>
+          </div>
+          <input type="file" id="shotFile" accept="image/*" multiple hidden>
+          <input type="file" id="docFile" accept=".txt,.text,.tab,.md,.pdf,text/plain,application/pdf" multiple hidden>
+          <div class="fetchmsg" id="shotMsg" role="status"></div>
+        </div>
+        <div class="field"><label for="fTitle">Heiti lags</label><input id="fTitle" autocomplete="off"></div>
+        <div class="field"><label for="fArtist">Flytjandi</label><input id="fArtist" autocomplete="off"></div>
+        <div class="field full"><label for="fUrl">Hlekkur á tabið</label>
+          <div class="urlrow"><input id="fUrl" type="url" inputmode="url" placeholder="Límdu hlekk, t.d. af Ultimate Guitar" autocomplete="off"><button class="btn primary claude-only" id="fetchBtn" type="button">Sækja tab</button></div>
+          <div class="fetchmsg" id="fetchMsg" role="status"></div>
+        </div>
+        <div class="field full" id="urlNote" hidden><div class="note">
+          <span class="solo-only"><b>Svona færðu tabið af síðunni inn:</b><ol><li>Opnaðu síðuna með tabinu í Safari.</li><li>Opnaðu bókamerkin og ýttu á „Senda í Bassatab“. Tabið afritast.</li><li>Komdu aftur í Bassatab og límdu í stóra reitinn.</li></ol><a href="#" class="bmOpen3">Setja upp „Senda í Bassatab“</a></span>
+          <span class="claude-only"><b>Svona færðu tabið af hlekknum inn:</b>
+          <ol><li><a id="urlOpen" href="#" target="_blank" rel="noopener">Opnaðu síðuna ↗</a></li><li>Taktu skjáskot af tabinu. Ef það er langt, taktu fleiri skjáskot niður síðuna.</li><li>Komdu aftur hingað og ýttu á „Velja skjáskot“.</li></ol>
+          Fljótlegast: notaðu „Senda í Bassatab“ hnappinn á síðunni og límdu svo hér. <a href="#" id="bmOpen2">Setja upp hnappinn</a></span>
+        </div></div>
+        <div class="field"><label for="fBpm">Tempó (BPM)</label><input id="fBpm" type="number" inputmode="numeric" min="20" max="320" value="80"></div>
+        <div class="field"><label for="fBpb">Slög á milli |</label><input id="fBpb" type="number" inputmode="numeric" min="1" max="16" value="4"></div>
+        <div class="field full"><label for="fFolder">Mappa</label><select id="fFolder"></select><input id="fFolderNew" placeholder="Heiti nýrrar möppu" autocomplete="off" hidden style="margin-top:8px"></div>
+        <div class="field full"><label for="fRaw">Tabið. Límdu allt hér, líka hljóma og kaflaheiti</label>
+          <textarea id="fRaw" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" placeholder="[Verse]
+Am            F
+G|------------|------------|
+D|------------|------------|
+A|-0--0-3-0---|------------|
+E|------------|-1--1-1-3---|"></textarea>
+          <div class="sum" id="sum"></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn danger" id="eDel" hidden>Eyða tabi</button>
+        <span class="sp"></span>
+        <button class="btn" id="eCancel">Hætta við</button>
+        <button class="btn primary" id="eSave2">Vista og spila</button>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- PLAYER -->
+  <section id="vPlay" class="view" hidden>
+    <header class="bar top">
+      <button class="ib" id="pBack" aria-label="Til baka í safn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="ttl"><b id="pTitle"></b><span id="pArtist"></span></div>
+      <button class="ib" id="pMode" aria-label="Skipta á milli Fylgja og Allt á skjá" title="Fylgja / Allt á skjá"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <div class="seg" role="group" aria-label="Útlit">
+        <button id="mFollow" aria-pressed="true" title="Stórt letur, skjárinn fylgir spiluninni">Fylgja</button>
+        <button id="mFit" aria-pressed="false" title="Allt tabið á einum skjá">Allt</button>
+      </div>
+      <button class="ib star" id="pFav" aria-pressed="false" aria-label="Uppáhalds"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button>
+      <button class="ib" id="pEdit" aria-label="Breyta tabi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg></button>
+    </header>
+    <main id="stage" class="follow"><div id="sheet" class="sheet follow"></div></main>
+    <div class="hint" id="hint">Ýttu á takt til að byrja þar</div>
+    <footer class="bar bottom">
+      <div class="prog" id="prog"></div>
+      <div class="tgroup">
+        <button class="ib" id="bStart" aria-label="Fara á byrjun"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="2.6" height="14" rx="1"/><path d="M19 5.8v12.4a.8.8 0 0 1-1.2.7L9 13a1.2 1.2 0 0 1 0-2l8.8-5.9a.8.8 0 0 1 1.2.7z"/></svg></button>
+        <button class="play" id="bPlay" aria-label="Spila"><svg id="icPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><svg id="icPause" viewBox="0 0 24 24" fill="currentColor" hidden><rect x="6" y="5" width="4.2" height="14" rx="1.2"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.2"/></svg></button>
+        <button class="ib" id="bLoop" aria-pressed="false" aria-label="Endurtaka núverandi línu" title="Endurtaka línu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/></svg></button>
+      </div>
+      <div class="bpm" aria-label="Tempó">
+        <button id="bpmDn" aria-label="Hægja">−</button>
+        <button class="v" id="bpmV" aria-label="Stillingar tempós"><b id="bpmVal">100</b><small id="bpmSub">BPM</small></button>
+        <button id="bpmUp" aria-label="Hraða">+</button>
+      </div>
+      <button class="ib" id="bSet" aria-label="Stillingar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+    </footer>
+  </section>
+</div>
+
+<div id="countBadge" hidden></div>
+
+<!-- Player settings -->
+<div class="sheetbg" id="setBg" hidden>
+  <div class="sheetp" role="dialog" aria-label="Stillingar">
+    <h3>Stillingar</h3>
+    <label class="row" for="optBass"><span>Bassahljóð<small>Spilar nóturnar í tabinu þegar þú ýtir á play. Í iPhone þarf hljóðrofinn á hliðinni að vera á.</small></span><input type="checkbox" id="optBass" class="sw"></label>
+    <label class="row" for="bassVol"><span>Styrkur bassans</span><input type="range" id="bassVol" min="0" max="100" step="5" value="80"></label>
+    <div class="row"><span>Tab á skjá<small>Fylgja: stórt letur sem fylgir spiluninni. Allt: allt lagið á einum skjá.</small></span><div class="segw" role="group" aria-label="Tab á skjá"><button id="sFollow">Fylgja</button><button id="sFit">Allt</button></div></div>
+    <div class="row"><span>Útlit<small>Gildir um öll lög á þessu tæki</small></span><div class="segw" role="group" aria-label="Útlit"><button id="lkPaper">Pappír</button><button id="lkDark">Dökkt</button></div></div>
+    <div class="row"><span>Leturstærð<small id="fsNote">Klíptu með tveimur fingrum á skjánum til að stækka eða minnka</small></span><div class="stepper"><button id="fsDn" aria-label="Minna letur">A−</button><b id="fsVal">16</b><button id="fsUp" aria-label="Stærra letur">A+</button></div></div>
+    <label class="row" for="optLabels"><span>Strengjaheiti<small>Setja G D A E fremst á hverja línu</small></span><input type="checkbox" id="optLabels" class="sw"></label>
+    <label class="row" for="optCompact"><span>Bara tab og kaflaheiti<small>Felur höfund, netföng og annan aukatexta</small></span><input type="checkbox" id="optCompact" class="sw"></label>
+    <label class="row" for="spd"><span>Æfingahraði <small id="spdOut">100% af tempói lagsins</small></span><input type="range" id="spd" min="40" max="150" step="5" value="100"></label>
+    <div class="row"><span>Slög á milli |<small>Oftast 4. Breyttu ef bendillinn fer of hratt eða hægt yfir takt.</small></span><div class="stepper"><button id="bpbDn" aria-label="Færri slög">−</button><b id="bpbVal">4</b><button id="bpbUp" aria-label="Fleiri slög">+</button></div></div>
+    <label class="row" for="optClick"><span>Metrónóm<small>Smellur á hverju slagi</small></span><input type="checkbox" id="optClick" class="sw"></label>
+    <label class="row" for="optCount"><span>Talning inn<small>Einn taktur áður en byrjar</small></span><input type="checkbox" id="optCount" class="sw"></label>
+    <div class="row"><span>Slá inn tempó<small>Bankaðu í takt, 4 sinnum eða oftar</small></span><button class="btn" id="tapBtn">Banka</button></div>
+    <button class="btn primary wide" id="setClose" style="margin-top:10px">Loka</button>
+  </div>
+</div>
+
+<!-- General settings -->
+<div class="sheetbg" id="gsetBg" hidden>
+  <div class="sheetp" role="dialog" aria-label="Stillingar">
+    <h3>Stillingar</h3>
+    <div class="row"><span>Útlit<small>Gildir um öll lög á þessu tæki</small></span><div class="segw" role="group" aria-label="Útlit"><button id="gLkPaper">Pappír</button><button id="gLkDark">Dökkt</button></div></div>
+    <label class="row" for="gBassVol"><span>Styrkur bassans</span><input type="range" id="gBassVol" min="0" max="100" step="5" value="80"></label>
+    <div class="row"><span>„Senda í Bassatab“<small>Bókamerki sem sækir tab af síðum eins og Ultimate Guitar</small></span><button class="btn" id="bmOpen">Setja upp</button></div>
+    <div class="row"><span>Öryggisafrit<small>Afritar öll lögin sem texta. Geymdu það t.d. í Glósum.</small></span><button class="btn" id="bkCopy">Afrita</button></div>
+    <div class="row"><span>Lesa inn afrit<small>Úr texta eða skrá</small></span><button class="btn" id="bkOpen">Lesa inn</button></div>
+    <div class="row"><span>Geymsla<small id="syncSt" class="syncst">Tengist…</small></span></div>
+    <p class="msg" id="verInfo" style="margin:6px 0 0"></p>
+    <button class="btn primary wide" id="gsetClose" style="margin-top:10px">Loka</button>
+  </div>
+</div>
+
+<!-- Bookmarklet setup -->
+<div class="sheetbg" id="bmBg" hidden>
+  <div class="sheetp" role="dialog" aria-label="Senda í Bassatab hnappur">
+    <h3>„Senda í Bassatab“ hnappurinn</h3>
+    <p class="msg" style="margin:0 0 6px;color:var(--fg)">Hnappurinn er bókamerki í vafranum. Þegar þú ert á síðu með tabi ýtirðu á hann. Hann finnur tabið, afritar það ásamt titli og hlekk, og opnar Bassatab. Þar ýtirðu á „Nýtt tab“ og límir.</p>
+    <div class="bmstep"><b>Á tölvu (Chrome, Safari, Edge)</b>
+      <ol><li>Sýndu bókamerkjastikuna (Cmd+Shift+B í Chrome).</li><li>Dragðu þennan hnapp upp í stikuna: <a class="bmlink" id="bmLink" href="#">Senda í Bassatab</a></li></ol></div>
+    <div class="bmstep"><b>Á iPhone (Safari)</b>
+      <ol><li>Ýttu á <b>Afrita kóðann</b> hér fyrir neðan.</li><li>Í Safari: opnaðu hvaða síðu sem er, ýttu á Deila → Bæta við bókamerki og vistaðu það sem „Senda í Bassatab“.</li><li>Opnaðu bókamerkin, haltu fingri á nýja bókamerkinu → Breyta. Eyddu slóðinni og límdu kóðann í staðinn.</li><li>Á tab-síðu: opnaðu bókamerkin og ýttu á „Senda í Bassatab“.</li></ol></div>
+    <div class="bmstep"><b>Á Android (Chrome)</b>
+      <ol><li>Búðu til bókamerki eins og á iPhone og límdu kóðann sem slóð.</li><li>Á tab-síðu: skrifaðu „Senda í Bassatab“ í slóðareitinn og veldu bókamerkið.</li></ol></div>
+    <textarea id="bmCode" readonly spellcheck="false" aria-label="Kóði hnappsins" style="min-height:70px"></textarea>
+    <div class="msg" id="bmMsg"></div>
+    <div class="actions"><span class="sp"></span><button class="btn" id="bmClose">Loka</button><button class="btn primary" id="bmCopy">Afrita kóðann</button></div>
+  </div>
+</div>
+
+<!-- Backup import -->
+<div class="sheetbg" id="bkBg" hidden>
+  <div class="sheetp" role="dialog" aria-label="Lesa inn afrit">
+    <h3>Lesa inn afrit</h3>
+    <p class="msg" style="margin:0 0 8px">Límdu öryggisafritið hér eða veldu skrá. Lög sem eru þegar til uppfærast, ný bætast við.</p>
+    <textarea id="bkText" spellcheck="false" aria-label="Öryggisafrit"></textarea>
+    <input type="file" id="bkFile" accept=".json,.txt,application/json,text/plain" style="margin:10px 0">
+    <div class="msg" id="bkMsg"></div>
+    <div class="actions"><span class="sp"></span><button class="btn" id="bkClose">Loka</button><button class="btn primary" id="bkDo">Lesa inn</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const KEY = 'bassatab.songs.v1';
+const STANDALONE = !!window.BASSATAB_STANDALONE;     // phone app build: no Claude, no sync, everything on the phone
+document.documentElement.classList.add(STANDALONE ? 'standalone' : 'embedded');
+/* Size the app to the part of the screen that is really visible (iOS toolbars, app headers) */
+(() => {
+  const vv = window.visualViewport; if (!vv) return;
+  const fit = () => { const h = Math.min(vv.height, window.innerHeight); if (h > 200){ document.documentElement.style.setProperty('--vvh', Math.round(h) + 'px'); document.documentElement.classList.add('vv'); } };
+  vv.addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 300)); fit();
+})();
+const LH = 1.32, GAP_CHUNK = 0.9, GAP_SMALL = 0.3, COL_GAP = 2.2;
+let chR = 0.6;
+
+const S = {
+  songs: [], song: null, parsed: [], mode: 'follow', staves: [], els: [], bars: [], total: 0,
+  pos: 0, pre: 0, playing: false, last: 0, loop: null, lastClick: null, ac: null,
+  cur: -1, curBar: -1, lock: null, taps: [], fontPx: 16, editing: null, delArm: false
+};
+
+/* ---------- storage ---------- */
+function load(){ try { const v = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(v)) return v; } catch(e){} return null; }
+function persist(){ try { localStorage.setItem(KEY, JSON.stringify(S.songs)); } catch(e){} }
+const PREFS = (() => { try { return Object.assign({ look: 'paper', bassVol: 0.8 }, JSON.parse(localStorage.getItem('bassatab.prefs') || '{}')); } catch(e){ return { look: 'paper', bassVol: 0.8 }; } })();
+const STAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
+/* Folders: names are synced through one 'meta' document beside the songs */
+const FMETA = (() => { try { return Object.assign({ folders: [], updated: 0 }, JSON.parse(localStorage.getItem('bassatab.folders') || '{}')); } catch(e){ return { folders: [], updated: 0 }; } })();
+function saveFolders(){ FMETA.updated = Date.now(); try { localStorage.setItem('bassatab.folders', JSON.stringify(FMETA)); } catch(e){} pushMeta(); }
+function allFolders(){ const set = new Set(FMETA.folders); S.songs.forEach(s => { if (s.folder) set.add(s.folder); }); return [...set].sort((a, b) => a.localeCompare(b, 'is')); }
+function savePrefs(){ try { localStorage.setItem('bassatab.prefs', JSON.stringify(PREFS)); } catch(e){} }
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+function newSong(o){ return Object.assign({ id: uid(), title: '', artist: '', url: '', raw: '', bpm: 80, bpb: 4, font: null, mode: 'follow', speed: 1, click: false, countIn: true, created: Date.now(), updated: Date.now() }, o); }
+
+/* ---------- example (original line, written for this app) ---------- */
+function sampleRaw(){
+  const e = '----------------';
+  const P = {
+    E7: {G:e, D:e, A:'------4-5-4-----', E:'0-4-7-------7-4-'},
+    A7: {G:e, D:'------4-5-4-----', A:'0-4-7-------7-4-', E:e},
+    B7: {G:e, D:'------6-7-6-----', A:'2-6-9-------9-6-', E:e},
+    E:  {G:e, D:e, A:e, E:'0---------------'}
+  };
+  const stave = chs => {
+    const chord = ('  ' + chs.map(c => c.padEnd(17, ' ')).join('')).replace(/\s+$/, '');
+    return [chord, ...['G','D','A','E'].map(s => s + '|' + chs.map(c => P[c][s]).join('|') + '|')].join('\n');
+  };
+  return [
+    '[Intro]', stave(['E7','E7']), '',
+    '[Vers – 12 takta blús]', stave(['E7','E7','E7','E7']), '', stave(['A7','A7','E7','E7']), '', stave(['B7','A7','E7','B7']), '',
+    '[Endir]', stave(['E']), '',
+    'Áttundapartar, jafnir og léttir. Prófaðu að lækka tempóið niður í 70% fyrst.'
+  ].join('\n');
+}
+
+/* ---------- parsing ---------- */
+const REPEAT_RE = /\s+(?:[xX×]\s*\d+|\d+\s*[xX×]|\(\s*[xX×]?\s*\d+\s*[xX×]?\s*\))\s*$/;
+const LABEL_RE = /^\s*(?:[A-Ga-g][#b]?)?\s*/;
+const CHORD_RE = /^\(?[A-G](?:#|b|♯|♭)?(?:maj|min|mi|m|M|dim|aug|sus|add|°|ø|\+|-)?\d*(?:(?:maj|add|sus|b|#|\+|-)?\d+)*(?:\/[A-G](?:#|b)?)?\*?\)?$/;
+const FILL_RE = /^(?:\||\/|-|%|x\d+|\d+x|N\.?C\.?|\(|\)|\.+|:\|\||\|\|:?)$/i;
+const HDR_RE = /^\s*(?:\[[^\]]{1,40}\]|\(?(?:intro|verse|vers|chorus|pre-?chorus|bridge|outro|solo|riff|main riff|interlude|hook|refrain|viðlag|millikafli|forspil|eftirspil|endir|ending|break|breakdown|fill|coda|tag|instrumental)\b[^|\-]{0,24}\)?:?)\s*$/i;
+
+function clean(raw){
+  return String(raw || '').replace(/\r\n?/g, '\n').replace(/ /g, ' ').replace(/\t/g, '    ')
+    .replace(/\[\/?(?:ch|tab)\]/gi, '').split('\n').map(l => l.replace(/\s+$/, ''))
+    .filter(l => !/^\s*tab\s+generated\s+(at|by)\b/i.test(l))      // export stamps from tab editors (e.g. tabby.pro)
+    .join('\n').replace(/^\n+|\n+$/g, '');
+}
+function isTab(t){
+  const core = t.replace(REPEAT_RE, '');
+  const body = core.slice(core.match(LABEL_RE)[0].length);
+  if (body.length < 5) return false;
+  const d = (body.match(/-/g) || []).length;
+  if (d < 3 || d / body.length < 0.3) return false;
+  const ok = (body.match(/[-0-9|:xXhpbrstvg\/\\~().^*<>=\[\] ]/g) || []).length;
+  return ok / body.length >= 0.85;
+}
+function isChord(t){
+  const toks = t.trim().split(/\s+/); let c = 0;
+  for (const k of toks){ if (CHORD_RE.test(k)) c++; else if (!FILL_RE.test(k)) return false; }
+  return c > 0;
+}
+/* Positional marks above a stave (e.g. "SOLO      ss    ss", "PM----") keep their columns */
+function isAnnot(t){ return t.length >= 10 && !isTab(t) && (/\S\s{3,}\S/.test(t) || /^\s{6,}\S/.test(t)); }
+const DEF_STRINGS = { 4: ['G','D','A','E'], 5: ['G','D','A','E','B'], 6: ['C','G','D','A','E','B'] };
+function tuningOf(raw){
+  const m = String(raw).match(/tuning\s*[:\-]?\s*([A-G][#b]?(?:[\s,]+[A-G][#b]?){3,5})\b/i);
+  return m ? m[1].trim().split(/[\s,]+/).reverse() : null;   // tab lists highest string on top
+}
+function addLabels(st, tun){
+  const n = st.lines.filter(l => l.kind === 'tab').length;
+  const names = tun && tun.length === n ? tun : DEF_STRINGS[n];
+  if (!names) return st;
+  const w = Math.max(...names.map(x => x.length)); let i = 0;
+  return makeStave(st.lines.map(l => l.kind === 'tab' ? { kind: 'tab', text: names[i++].padEnd(w) + l.text } : { kind: l.kind, text: l.text ? ' '.repeat(w) + l.text : '' }));
+}
+/* What the player shows: the parsed tab plus this song's display choices */
+function prepare(song){
+  let chunks = parse(song.raw);
+  if (song.compact) chunks = chunks.map(items => items.filter(it => !(it.type === 'line' && (it.kind === 'text' || it.kind === 'rule')))).filter(c => c.length);
+  if (song.labels){ const tun = tuningOf(song.raw); chunks = chunks.map(items => items.map(it => it.type === 'stave' && it.labelEnd === 0 ? addLabels(it, tun) : it)); }
+  return chunks;
+}
+function tempoOf(raw){
+  const m = String(raw).match(/(?:tempo|bpm|♩|q)\s*[:=]?\s*(\d{2,3})\b/i) || String(raw).match(/\b(\d{2,3})\s*bpm\b/i);
+  const v = m ? +m[1] : 0; return v >= 30 && v <= 300 ? v : 0;
+}
+function niceCase(s){ s = s.trim(); return s === s.toUpperCase() ? s.toLowerCase().replace(/(^|[\s(])(\S)/g, (a, b, c) => b + c.toUpperCase()) : s; }
+function detectTitle(raw){
+  const ls = clean(raw).split('\n').filter(l => l.trim() && !isTab(l)).slice(0, 8);
+  const sg = ls.map(l => l.match(/^\s*(?:song|title|lag|heiti)\s*:\s*(.+)$/i)).find(Boolean);
+  if (sg){ const ar = ls.map(l => l.match(/^\s*(?:artist|band|flytjandi)\s*:\s*(.+)$/i)).find(Boolean); const t = sg[1].trim(); return { title: t === t.toLowerCase() ? t.replace(/(^|\s)(\S)/g, (a, b, c) => b + c.toUpperCase()) : niceCase(t), artist: ar ? niceCase(ar[1]) : '' }; }
+  for (const l of ls){
+    if (/[:@|]/.test(l)) continue;
+    const m = l.trim().match(/^(.{2,60}?)\s+[-–—]\s+(.{2,40})$/);
+    if (m) return { title: niceCase(m[1]), artist: niceCase(m[2]) };
+  }
+  return null;
+}
+const isRule = t => /^[\s\-=_*~#+]{8,}$/.test(t) && !/\d/.test(t);
+function classify(t){
+  if (!t.trim()) return 'blank';
+  if (isRule(t) && !/\|/.test(t)) return 'rule';
+  if (HDR_RE.test(t)) return 'header';
+  if (isTab(t)) return 'tab';
+  if (isChord(t)) return 'chord';
+  if (/^[\s\d+&.|]+$/.test(t) && /[+&]/.test(t)) return 'count';
+  return 'text';
+}
+function groupsOf(s){
+  const g = [];
+  for (let i = 0; i < s.length; i++){
+    const c = s[i];
+    if (c === '|' || (c === ':' && (s[i+1] === '|' || s[i-1] === '|'))){
+      const L = g[g.length-1];
+      if (L && L.e === i-1) L.e = i; else g.push({s:i, e:i});
+    }
+  }
+  return g;
+}
+function makeStave(lines){
+  const st = { type: 'stave', lines };
+  const tabIdx = []; lines.forEach((l, i) => { if (l.kind === 'tab') tabIdx.push(i); });
+  st.firstTab = tabIdx[0]; st.nTab = tabIdx.length;
+  let ref = lines[tabIdx[0]].text, best = -1;
+  for (const i of tabIdx){ const n = groupsOf(lines[i].text).length; if (n > best){ best = n; ref = lines[i].text; } }
+  const core = ref.replace(REPEAT_RE, '');
+  const labelEnd = core.match(LABEL_RE)[0].length;
+  const g = groupsOf(core);
+  const bars = [];
+  if (!g.length){
+    const len = core.length - labelEnd, nb = Math.max(1, Math.round(len / 16));
+    for (let k = 0; k < nb; k++){ const x0 = Math.round(labelEnd + len*k/nb), x1 = Math.round(labelEnd + len*(k+1)/nb); bars.push({ x0, x1, gs: x0, ge: x1 }); }
+  } else {
+    if (g[0].s - labelEnd >= 3) bars.push({ x0: labelEnd, x1: g[0].s, gs: labelEnd, ge: g[0].e + 1 });
+    for (let k = 0; k + 1 < g.length; k++){
+      const x0 = g[k].e + 1, x1 = g[k+1].s;
+      if (x1 - x0 >= 2) bars.push({ x0, x1, gs: g[k].s, ge: g[k+1].e + 1 });
+    }
+    const L = g[g.length-1];
+    if (core.length - (L.e + 1) >= 3) bars.push({ x0: L.e + 1, x1: core.length, gs: L.s, ge: core.length });
+    if (!bars.length){ const x1 = Math.max(labelEnd + 1, core.length); bars.push({ x0: labelEnd, x1, gs: labelEnd, ge: x1 }); }
+  }
+  st.bars = bars; st.labelEnd = labelEnd; st.hasGroups = g.length > 0;
+  st.width = Math.max(...lines.map(l => l.text.length));
+  if (REF_BAR) st.bars = splitBars(st);
+  return st;
+}
+/* Some tab tools write a whole line without inner bar lines. Such a "bar" is split into
+   bars of the song's typical width, cut where no string has a note. */
+let REF_BAR = null;
+function splitBars(st){
+  const ref = REF_BAR || 16, lim = Math.max(40, ref * 2.2);
+  const tabs = st.lines.filter(l => l.kind === 'tab').map(l => l.text);
+  const safe = c => tabs.every(t => c >= t.length || t[c] === '-' || t[c] === ' ');
+  const out = [];
+  for (const b of st.bars){
+    const w = b.x1 - b.x0;
+    if (w <= lim){ out.push(b); continue; }
+    const n = Math.max(2, Math.round(w / ref)); let prev = b.x0;
+    for (let k = 1; k <= n; k++){
+      let c = b.x1;
+      if (k < n){ const t = Math.round(b.x0 + w * k / n); c = t; for (let d = 0; d <= 4; d++){ if (safe(t + d)){ c = t + d; break; } if (safe(t - d)){ c = t - d; break; } } }
+      if (c - prev < 2) continue;
+      out.push({ x0: prev, x1: c, gs: k === 1 ? (b.gs ?? prev) : prev, ge: k === n ? (b.ge ?? c) : c, synth: true });
+      prev = c;
+    }
+  }
+  return out;
+}
+function parse(raw){
+  REF_BAR = null;
+  const out = parseChunks(raw);
+  const widths = [];
+  out.forEach(items => items.forEach(it => { if (it.type === 'stave') it.bars.forEach(b => { const w = b.x1 - b.x0; if (w >= 6 && w <= 40) widths.push(w); }); }));
+  widths.sort((a, b) => a - b);
+  REF_BAR = widths.length ? widths[widths.length >> 1] : 16;
+  out.forEach(items => items.forEach(it => { if (it.type === 'stave') it.bars = splitBars(it); }));
+  return out;
+}
+function parseChunks(raw){
+  const lines = clean(raw).split('\n').map(text => ({ text, kind: classify(text) }));
+  const chunks = []; let cur = [];
+  for (const l of lines){ if (l.kind === 'blank'){ if (cur.length) chunks.push(cur); cur = []; } else cur.push(l); }
+  if (cur.length) chunks.push(cur);
+  return chunks.map(ls => {
+    const items = []; let i = 0;
+    while (i < ls.length){
+      if (ls[i].kind === 'tab'){
+        let j = i; while (j < ls.length && ls[j].kind === 'tab') j++;
+        if (j - i >= 2){
+          const st = [];
+          while (items.length && items[items.length-1].type === 'line' && st.length < 2){
+            const it = items[items.length-1];
+            const k = it.kind === 'chord' ? 'chord' : isAnnot(it.text) ? 'annot' : null;
+            if (!k) break;
+            items.pop(); st.unshift({ text: it.text, kind: k });
+          }
+          for (let k = i; k < j; k++) st.push({ text: ls[k].text, kind: 'tab' });
+          if (j < ls.length && ls[j].kind === 'count'){ st.push({ text: ls[j].text, kind: 'count' }); j++; }
+          items.push(makeStave(st)); i = j; continue;
+        }
+        items.push({ type: 'line', text: ls[i].text, kind: isRule(ls[i].text) ? 'rule' : 'text' }); i++; continue;
+      }
+      items.push({ type: 'line', text: ls[i].text, kind: ls[i].kind }); i++;
+    }
+    return items;
+  });
+}
+function wrapStave(st, W){
+  if (!W || st.width <= W || st.bars.length < 2) return [st];
+  const B = st.bars, pieces = []; let a = 0;
+  const pw = (a, b) => st.labelEnd + 1 + (B[b].ge - B[a].gs);
+  while (a < B.length){
+    let b = a;
+    while (b + 1 < B.length && pw(a, b + 1) <= W) b++;
+    pieces.push([a, b]); a = b + 1;
+  }
+  if (pieces.length < 2) return [st];
+  const refLine = st.lines.find(l => l.kind === 'tab').text;
+  return pieces.map(([a, b], k) => {
+    const last = k === pieces.length - 1;
+    const gs = k === 0 ? 0 : B[a].gs, ge = last ? Infinity : B[b].ge;
+    const pipe = k > 0 && !/[|:]/.test(refLine[gs] || '');     // cut inside a long line: start the piece with a bar line
+    const lines = st.lines.map(l => {
+      let txt;
+      if (k === 0) txt = l.text.slice(0, ge);
+      else {
+        const pre = l.kind === 'tab' ? l.text.slice(0, st.labelEnd).padEnd(st.labelEnd, ' ') + (pipe ? '|' : '') : ' '.repeat(st.labelEnd + (pipe ? 1 : 0));
+        txt = pre + l.text.slice(gs, ge);
+      }
+      return { kind: l.kind, text: l.kind === 'tab' ? txt : txt.replace(/\s+$/, '') };
+    });
+    const p = makeStave(lines);
+    const off = k === 0 ? 0 : gs - st.labelEnd - (pipe ? 1 : 0);
+    p.bars = B.slice(a, b + 1).map(x => ({ x0: x.x0 - off, x1: x.x1 - off, gs: x.gs - off, ge: x.ge - off, synth: x.synth }));
+    p.labelEnd = st.labelEnd; p.hasGroups = true;
+    return p;
+  });
+}
+/* Flatten into layout units: each unit ends with a stave; loose lines ride with the next stave */
+function layout(chunks, W){
+  const units = [];
+  chunks.forEach(items => {
+    let u = null, first = true;
+    const open = () => { u = { items: [], w: 0, rows: 0, gap: first ? 'chunk' : 'small' }; first = false; };
+    const addLine = it => { const L = it.kind === 'rule' ? 0 : it.text.length; u.items.push(it); u.rows += (W && L > W) ? Math.ceil(L / W) : 1; u.w = Math.max(u.w, W ? Math.min(L, W) : L); };
+    for (const it of items){
+      if (!u) open();
+      if (it.type === 'stave'){
+        for (const p of wrapStave(it, W)){
+          if (!u) open();
+          u.items.push(p); u.rows += p.lines.length; u.w = Math.max(u.w, p.width);
+          units.push(u); u = null;
+        }
+      } else addLine(it);
+    }
+    if (u && u.items.length){
+      const prev = units[units.length-1];
+      if (!first && prev && u.gap === 'small'){ u.items.forEach(it => { prev.items.push(it); prev.rows += 1; prev.w = Math.max(prev.w, Math.min(it.text.length, W || 1e9)); }); }
+      else units.push(u);
+    }
+  });
+  return units;
+}
+const unitH = (u, firstInCol) => u.rows * LH + (firstInCol ? 0 : (u.gap === 'chunk' ? GAP_CHUNK : GAP_SMALL));
+function pack(units, H){
+  const cols = []; let col = [], h = 0;
+  for (const u of units){
+    const add = unitH(u, !col.length);
+    if (col.length && h + add > H + 1e-6){ cols.push(col); col = [u]; h = unitH(u, true); }
+    else { col.push(u); h += add; }
+  }
+  if (col.length) cols.push(col);
+  return cols;
+}
+function solveFit(chunks, aw, ah){
+  let best = null;
+  for (const W of [0, 96, 80, 66, 54, 44, 36, 30]){
+    const units = layout(chunks, W || null);
+    if (!units.length) continue;
+    const total = units.reduce((s, u, i) => s + unitH(u, i === 0), 0);
+    const maxU = Math.max(...units.map(u => unitH(u, true)));
+    for (let n = 1; n <= Math.min(7, units.length); n++){
+      let lo = Math.max(maxU, total / n), hi = total;
+      for (let it = 0; it < 28; it++){ const mid = (lo + hi) / 2; if (pack(units, mid).length <= n) hi = mid; else lo = mid; }
+      const cols = pack(units, hi);
+      const widths = cols.map(c => Math.max(...c.map(u => u.w)));
+      const colH = Math.max(...cols.map(c => c.reduce((s, u, i) => s + unitH(u, i === 0), 0)));
+      const emW = widths.reduce((s, w) => s + w * chR, 0) + COL_GAP * (cols.length - 1);
+      const px = Math.min(aw / emW, ah / colH, 30);
+      if (!best || px > best.px + 0.05) best = { px, cols, widths };
+    }
+  }
+  return best;
+}
+
+/* ---------- rendering ---------- */
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+function tabHTML(t){
+  const le = t.match(LABEL_RE)[0].length;
+  let h = le ? '<span class="lbl">' + esc(t.slice(0, le)) + '</span>' : '';
+  t.slice(le).replace(/(\d+)|([^\d\-|:\s]+)|([-|:\s]+)/g, (m, n, tq, d) => {
+    h += n ? '<span class="n">' + n + '</span>' : tq ? '<span class="t">' + esc(tq) + '</span>' : esc(d);
+    return m;
+  });
+  return h;
+}
+function chordHTML(t){ return t.split(/(\s+)/).map(k => CHORD_RE.test(k) ? '<span class="c">' + esc(k) + '</span>' : esc(k)).join(''); }
+function lineHTML(l){
+  if (l.kind === 'tab') return tabHTML(l.text);
+  if (l.kind === 'chord') return chordHTML(l.text);
+  if (l.kind === 'rule') return '';
+  if (l.kind === 'annot'){
+    const m = l.text.match(/^(\s*)(\S+(?: \d+)?)(.*)$/);
+    if (m && HDR_RE.test(m[2])) return esc(m[1]) + '<span class="h">' + esc(m[2]) + '</span>' + esc(m[3]);
+  }
+  return esc(l.text) || '&#8203;';
+}
+function unitHTML(u){
+  let h = '<div class="unit g-' + u.gap + '">';
+  for (const it of u.items){
+    if (it.type === 'stave'){
+      const i = S.staves.push(it) - 1;
+      h += '<div class="stave" data-i="' + i + '">' + it.lines.map(l => '<div class="ln k-' + l.kind + '">' + lineHTML(l) + '</div>').join('');
+      const top = it.firstTab * LH, ht = it.nTab * LH;
+      h += '<div class="barhl" style="top:' + top + 'em;height:' + ht + 'em"></div><div class="cur" style="top:' + (top - .15) + 'em;height:' + (ht + .3) + 'em"></div></div>';
+    } else h += '<div class="ln k-' + it.kind + '">' + lineHTML(it) + '</div>';
+  }
+  return h + '</div>';
+}
+function defFont(){ return window.innerWidth < 600 ? 14 : 18; }
+function render(){
+  if (!S.song) return;
+  const stage = $('stage'), sheet = $('sheet');
+  const ratio = stage.scrollHeight > stage.clientHeight ? stage.scrollTop / stage.scrollHeight : 0;
+  stage.className = sheet.className = S.mode === 'fit' ? 'fit' : 'follow';
+  sheet.classList.add('sheet');
+  if (PREFS.look === 'paper') stage.classList.add('paper');
+  const cs = getComputedStyle(stage);
+  const aw = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2;
+  const ah = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 2;
+  S.staves = [];
+  let html = '';
+  if (S.mode === 'fit'){
+    const r = solveFit(S.parsed, aw, ah);
+    if (!r){ sheet.innerHTML = ''; return; }
+    S.fontPx = Math.max(5, Math.floor(r.px * 10) / 10);
+    html = r.cols.map((c, i) => '<div class="col" style="width:' + r.widths[i] + 'ch">' + c.map(unitHTML).join('') + '</div>').join('');
+  } else {
+    S.fontPx = S.song.font || defFont();
+    const W = Math.max(16, Math.floor((aw + 2) / (chR * S.fontPx)));
+    const s = S.song;
+    html = '<header class="dochead"><h2>' + esc(s.title || 'Án titils') + (s.artist ? ' <span style="font-weight:400">·</span> <b>' + esc(s.artist) + '</b>' : '') + '</h2><p>Bassi · ' + s.bpm + ' BPM · ' + s.bpb + ' slög í takti</p></header>'
+         + '<div class="col">' + layout(S.parsed, W).map(unitHTML).join('') + '</div>';
+  }
+  sheet.style.fontSize = S.fontPx + 'px';
+  if (!S.song.raw.trim()) html = S.song.pending
+    ? '<div class="empty" style="font-family:var(--ui)"><b>Sæki tabið af hlekknum…</b><br>Claude á Macanum þínum sækir það og setur það inn, oftast innan 15 mínútna. Tabið birtist hér af sjálfu sér, líka í símanum.<br><br>Claude-appið þarf að vera opið á Macanum.</div>'
+    : S.song.fetchError ? '<div class="empty" style="font-family:var(--ui)"><b>Ekki tókst að sækja tabið.</b><br>' + esc(String(S.song.fetchError)) + '<br><br>Ýttu á blýantinn og límdu tabið eða notaðu skjáskot.</div>'
+    : '<div class="empty" style="font-family:var(--ui)">Ekkert tab er í þessu lagi ennþá.<br>Ýttu á blýantinn efst og límdu hlekk eða tabið sjálft.</div>';
+  sheet.innerHTML = html || '<div class="empty">Ekkert tab ennþá. Ýttu á blýantinn til að líma inn.</div>';
+  if (ratio) stage.scrollTop = ratio * stage.scrollHeight;
+  S.els = [...sheet.querySelectorAll('.stave')];
+  S.els.forEach(el => { el._cur = el.querySelector('.cur'); el._hl = el.querySelector('.barhl'); });
+  buildTimeline();
+  S.cur = -1; S.curBar = -1;
+  if (S.loop != null && S.loop >= S.staves.length) S.loop = null;
+  draw(false);
+}
+function buildTimeline(){
+  S.bars = [];
+  S.staves.forEach((st, i) => { st.b0 = S.bars.length; st.bars.forEach(b => S.bars.push({ si: i, x0: b.x0, x1: b.x1 })); st.b1 = S.bars.length - 1; });
+  S.total = S.bars.length * S.song.bpb;
+  if (S.pos > S.total) S.pos = 0;
+  buildEvents();
+}
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function draw(follow = true){
+  const bpb = S.song.bpb;
+  $('prog').style.width = S.total ? (100 * Math.min(1, S.pos / S.total)) + '%' : '0';
+  if (!S.bars.length) return;
+  const bi = Math.min(S.bars.length - 1, Math.max(0, Math.floor(S.pos / bpb)));
+  const frac = S.pos >= S.total ? 1 : Math.max(0, S.pos / bpb - bi);
+  const b = S.bars[bi], el = S.els[b.si];
+  if (b.si !== S.cur){
+    if (S.els[S.cur]) S.els[S.cur].classList.remove('on');
+    el.classList.add('on'); S.cur = b.si;
+    if (follow) followTo(el);
+  }
+  if (bi !== S.curBar){ el._hl.style.left = b.x0 + 'ch'; el._hl.style.width = (b.x1 - b.x0) + 'ch'; S.curBar = bi; }
+  const x = b.x0 + (b.x1 - b.x0) * frac;
+  el._cur.style.transform = 'translateX(' + x + 'ch)';
+  if (S.mode === 'follow'){
+    const u = el.parentElement;
+    if (u.scrollWidth > u.clientWidth + 2){
+      const px = x * chR * S.fontPx;
+      if (px < u.scrollLeft + 20 || px > u.scrollLeft + u.clientWidth - 40) u.scrollLeft = Math.max(0, px - u.clientWidth * 0.3);
+    }
+  }
+}
+function followTo(el){
+  if (S.mode !== 'follow') return;
+  const st = $('stage'), r = el.getBoundingClientRect(), sr = st.getBoundingClientRect();
+  const target = st.scrollTop + (r.top - sr.top) - st.clientHeight * 0.16;
+  st.scrollTo({ top: Math.max(0, target), behavior: reduceMotion ? 'auto' : 'smooth' });
+}
+
+/* ---------- audio + playback ---------- */
+function ensureAudio(){
+  try {
+    if (!S.ac){
+      S.ac = new (window.AudioContext || window.webkitAudioContext)();
+      S.master = S.ac.createDynamicsCompressor(); S.master.threshold.value = -14; S.master.ratio.value = 4;
+      S.master.connect(S.ac.destination);
+    }
+    if (S.ac.state === 'suspended') S.ac.resume();
+  } catch(e){}
+}
+/* Bass voice: saw + sine through a closing lowpass, plucked envelope. One voice per string. */
+const VOICES = {};
+function stopVoice(k, t){ const v = VOICES[k]; if (!v) return; try { v.g.gain.cancelScheduledValues(t); v.g.gain.setTargetAtTime(0.0001, t, 0.02); v.o.forEach(o => o.stop(t + 0.15)); } catch(e){} delete VOICES[k]; }
+function stopAllVoices(){ if (!S.ac) return; const t = S.ac.currentTime; Object.keys(VOICES).forEach(k => stopVoice(k, t)); }
+function pluck(ev){
+  const ac = S.ac; if (!ac || !S.master) return;
+  try {
+    const t = ac.currentTime + 0.004, f = 440 * Math.pow(2, (ev.midi - 69) / 12), vol = Math.max(0, Math.min(1, PREFS.bassVol));
+    if (!vol) return;
+    stopVoice(ev.str, t);
+    const g = ac.createGain(), lp = ac.createBiquadFilter(), o1 = ac.createOscillator(), o2 = ac.createOscillator(), g2 = ac.createGain();
+    lp.type = 'lowpass'; lp.Q.value = 1.5;
+    lp.frequency.setValueAtTime(Math.min(5000, f * 18), t); lp.frequency.exponentialRampToValueAtTime(Math.max(650, f * 5), t + 0.35);
+    o1.type = 'sawtooth'; o1.frequency.value = f; o2.type = 'sine'; o2.frequency.value = f; g2.gain.value = 0.8;
+    o1.connect(lp); lp.connect(g); o2.connect(g2); g2.connect(g); g.connect(S.master);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4 * vol, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.2 * vol, t + 0.18); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.7);
+    o1.start(t); o2.start(t); o1.stop(t + 1.8); o2.stop(t + 1.8);
+    VOICES[ev.str] = { g, o: [o1, o2] };
+  } catch(e){}
+}
+const NOTE_PC = { C:0, 'C#':1, DB:1, D:2, 'D#':3, EB:3, E:4, F:5, 'F#':6, GB:6, G:7, 'G#':8, AB:8, A:9, 'A#':10, BB:10, B:11 };
+function openStrings(names){                       // names top → bottom, returns MIDI per line
+  const pcs = names.map(n => NOTE_PC[String(n).toUpperCase()]);
+  if (pcs.some(p => p == null)) return null;
+  const out = []; let prev = null;
+  for (let i = pcs.length - 1; i >= 0; i--){
+    const m = prev == null ? 21 + ((pcs[i] - 9 + 12) % 12) : prev + 1 + ((((pcs[i] - (prev + 1)) % 12) + 12) % 12);
+    out[i] = m; prev = m;
+  }
+  return out;
+}
+function stringMidis(st){
+  const tabs = st.lines.filter(l => l.kind === 'tab'), n = tabs.length;
+  const lab = tabs.map(l => { const m = l.text.match(/^\s*([A-Ga-g])([#b]?)\s*[|:\-]/); return m ? m[1].toUpperCase() + m[2] : null; });
+  const names = lab.every(Boolean) ? lab : (S.tuning && S.tuning.length === n ? S.tuning : DEF_STRINGS[n]);
+  return names ? openStrings(names) : null;
+}
+function buildEvents(){
+  const bpb = S.song.bpb, E = [];
+  S.staves.forEach(st => {
+    const mid = stringMidis(st); if (!mid) return;
+    let k = 0;
+    st.lines.forEach(l => {
+      if (l.kind !== 'tab') return;
+      const si = k++, base = mid[si], le = l.text.match(LABEL_RE)[0].length, re = /\d+/g; let m;
+      while ((m = re.exec(l.text))){
+        if (m.index < le) continue;
+        const tok = m[0];
+        const parts = tok.length > 1 && +tok > 24 ? tok.split('').map((d, j) => [m.index + j, +d]) : [[m.index, +tok]];
+        for (const [col, fret] of parts){
+          const bi = st.bars.findIndex(b => col >= b.x0 - 0.01 && col < b.x1);
+          if (bi < 0) continue;
+          const b = st.bars[bi];
+          E.push({ beat: (st.b0 + bi) * bpb + (col - b.x0) / (b.x1 - b.x0) * bpb, midi: base + fret, str: si });
+        }
+      }
+    });
+  });
+  S.events = E.sort((a, b) => a.beat - b.beat);
+}
+function playRange(a, b){
+  if (S.song.bass === false || !S.events || !S.events.length || b <= a) return;
+  const E = S.events; let lo = 0, hi = E.length;
+  while (lo < hi){ const m = (lo + hi) >> 1; if (E[m].beat < a - 1e-9) lo = m + 1; else hi = m; }
+  for (let i = lo; i < E.length && E[i].beat < b - 1e-9; i++) pluck(E[i]);
+}
+function beep(acc){
+  const ac = S.ac; if (!ac) return;
+  try {
+    const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'square'; o.frequency.value = acc ? 1760 : 1180;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(acc ? 0.22 : 0.13, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.06);
+  } catch(e){}
+}
+async function wake(on){
+  try {
+    if (on && !S.lock && navigator.wakeLock) { S.lock = await navigator.wakeLock.request('screen'); S.lock.addEventListener('release', () => { S.lock = null; }); }
+    if (!on && S.lock){ await S.lock.release(); S.lock = null; }
+  } catch(e){ S.lock = null; }
+}
+function setPlayingUI(){
+  $('icPlay').hidden = S.playing; $('icPause').hidden = !S.playing;
+  $('bPlay').setAttribute('aria-label', S.playing ? 'Gera hlé' : 'Spila');
+}
+function play(){
+  if (!S.bars.length) return;
+  ensureAudio();
+  if (S.pos >= S.total) S.pos = 0;
+  S.playing = true; S.pre = S.song.countIn ? -S.song.bpb : 0; S.lastClick = null; S.last = performance.now();
+  S.cur = -1; draw(true);
+  setPlayingUI(); hideHint();
+  requestAnimationFrame(tick);
+}
+function pause(){
+  S.playing = false; S.pre = 0; $('countBadge').hidden = true; setPlayingUI(); stopAllVoices();
+}
+function tick(ts){
+  if (!S.playing) return;
+  const dt = Math.min(0.1, Math.max(0, (ts - S.last) / 1000)); S.last = ts;
+  const bpb = S.song.bpb, db = dt * S.song.bpm / 60 * S.song.speed;
+  let from = S.pos, wrapped = false;
+  if (S.pre < 0){
+    S.pre += db;
+    if (S.pre < 0){
+      const k = Math.floor(S.pre + 1e-9), key = 'p' + k;
+      if (S.lastClick !== key){ S.lastClick = key; beep(k === -bpb); const bd = $('countBadge'); bd.hidden = false; bd.textContent = k + bpb + 1; }
+    } else { S.pos += S.pre; S.pre = 0; S.lastClick = null; $('countBadge').hidden = true; }
+  } else S.pos += db;
+  if (S.pre >= 0){
+    if (S.loop != null && S.staves[S.loop]){
+      const st = S.staves[S.loop], a = st.b0 * bpb, z = (st.b1 + 1) * bpb;
+      if (S.pos >= z || S.pos < a){ playRange(from, z); S.pos = a + (((S.pos - a) % (z - a)) + (z - a)) % (z - a); S.lastClick = null; from = a; wrapped = true; }
+    }
+    playRange(from, Math.min(S.pos, S.total));
+    if (S.pos >= S.total){ S.pos = S.total; draw(); pause(); return; }
+    const b = Math.floor(S.pos + 1e-9);
+    if (S.song.click && S.lastClick !== b){ S.lastClick = b; beep(b % bpb === 0); }
+  }
+  draw(true);
+  requestAnimationFrame(tick);
+}
+function seekStave(delta){
+  if (!S.staves.length) return;
+  const cur = S.bars[Math.min(S.bars.length - 1, Math.floor(S.pos / S.song.bpb))];
+  const si = Math.max(0, Math.min(S.staves.length - 1, (cur ? cur.si : 0) + delta));
+  S.pos = S.staves[si].b0 * S.song.bpb; S.lastClick = null; draw(true);
+}
+
+/* ---------- song settings ---------- */
+function saveSong(){ if (!S.song) return; S.song.updated = Date.now(); persist(); pushSong(S.song); }
+
+/* ---------- sync across devices (claude.ai db, private per person) ---------- */
+const SY = { col: null, ready: false, timers: {}, chain: {} };
+function syncStatus(t, ok){ const el = $('syncSt'); el.textContent = t; el.className = 'syncst' + (ok ? ' ok' : ''); }
+function bodyOf(s){ const o = Object.assign({}, s); delete o.synced; return o; }
+function queue(id, fn){ SY.chain[id] = (SY.chain[id] || Promise.resolve()).then(fn); return SY.chain[id]; }
+function pushSong(s){
+  if (!SY.col || !s || s.example) return;
+  clearTimeout(SY.timers[s.id]);
+  SY.timers[s.id] = setTimeout(() => {
+    queue(s.id, () => SY.col.doc(s.id).set(bodyOf(s)))
+      .then(() => { s.synced = true; persist(); })
+      .catch(() => syncStatus('Ekki tókst að vista í skýið. Lagið er vistað á þessu tæki og fer upp við næstu breytingu.'));
+  }, 700);
+}
+function pushMeta(){
+  if (!SY.col) return;
+  clearTimeout(SY.timers.meta);
+  SY.timers.meta = setTimeout(() => { queue('meta', () => SY.col.doc('meta').set({ type: 'meta', folders: FMETA.folders, updated: FMETA.updated })).catch(() => {}); }, 500);
+}
+function removeRemote(id){
+  if (!SY.col) return;
+  clearTimeout(SY.timers[id]);
+  queue(id, () => SY.col.doc(id).delete()).catch(() => {});
+}
+function onRemote(snap){
+  const remote = new Map();
+  let changed = false;
+  snap.docs.forEach(d => {
+    const r = d.data(); if (!r) return;
+    if (d.id === 'meta'){
+      if ((r.updated || 0) > (FMETA.updated || 0) && Array.isArray(r.folders)){
+        FMETA.folders = r.folders.filter(x => typeof x === 'string'); FMETA.updated = r.updated;
+        try { localStorage.setItem('bassatab.folders', JSON.stringify(FMETA)); } catch(e){}
+        changed = true;
+      }
+      return;
+    }
+    if (typeof r.raw === 'string') remote.set(d.id, r);
+  });
+  for (const [id, r] of remote){
+    const l = S.songs.find(s => s.id === id);
+    if (!l){ S.songs.push(Object.assign(newSong({}), r, { id, synced: true })); changed = true; }
+    else if ((r.updated || 0) > (l.updated || 0)){
+      const rawChanged = r.raw !== l.raw;
+      Object.assign(l, r, { synced: true }); changed = true;
+      if (S.song === l && !$('vPlay').hidden){
+        $('pTitle').textContent = l.title || 'Án titils'; $('pArtist').textContent = l.artist || '';
+        if (rawChanged){ S.parsed = prepare(l); render(); }
+        syncPlayerUI();
+      }
+    } else l.synced = true;
+  }
+  if (!snap.metadata.fromCache){
+    SY.ready = true;
+    const hasRemote = remote.size > 0;
+    S.songs = S.songs.filter(s => {
+      if (remote.has(s.id)) return true;
+      if (s.synced){ changed = true; return false; }            // deleted on another device
+      if (s.example){ if (hasRemote){ changed = true; return false; } return true; }
+      pushSong(s); return true;                                  // new here, send it up
+    });
+    if (!snap.docs.some(d => d.id === 'meta') && FMETA.folders.length) pushMeta();
+    syncStatus('Samstillt. Lögin birtast á öllum tækjum þar sem þú opnar Bassatab á claude.ai.', true);
+  }
+  if (changed){ persist(); if (!$('vLib').hidden) renderLib(); }
+}
+async function startSync(){
+  if (STANDALONE){
+    syncStatus('Lögin eru geymd í þessum síma, líka án nets.', true);
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
+    const inApp = (navigator.standalone === true) || matchMedia('(display-mode: standalone)').matches;
+    $('installTip').hidden = inApp;
+    return;
+  }
+  let db = null, user = null;
+  try {
+    if (window.claude && typeof window.claude.use === 'function')
+      [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+  } catch(e){}
+  const id = user ? await user.id().catch(() => null) : null;
+  if (!db || !id){ syncStatus('Aðeins vistað á þessu tæki. Opnaðu Bassatab á claude.ai með innskráningu til að samstilla milli tækja.'); return; }
+  SY.col = db.collection('data/users/' + id);
+  const t = setTimeout(() => { if (!SY.ready) syncStatus('Næ ekki sambandi við skýið. Lögin eru vistuð á þessu tæki á meðan.'); }, 10000);
+  SY.col.onSnapshot(
+    snap => { onRemote(snap); if (!snap.metadata.fromCache) clearTimeout(t); },
+    e => { clearTimeout(t); syncStatus('Samstilling stöðvaðist (' + ((e && e.code) || 'villa') + '). Lögin eru vistuð á þessu tæki.'); }
+  );
+}
+function setBpm(v){
+  S.song.bpm = Math.max(20, Math.min(320, Math.round(v)));
+  $('bpmVal').textContent = S.song.bpm; saveSong();
+}
+function syncPlayerUI(){
+  const s = S.song;
+  $('bpmVal').textContent = s.bpm;
+  const pct = Math.round(s.speed * 100);
+  $('bpmSub').textContent = pct === 100 ? 'BPM · 100%' : 'BPM · ' + pct + '%';
+  $('bpmV').setAttribute('aria-label', 'Hraði ' + pct + '%. Ýttu til að skipta á milli 100, 75 og 50%');
+  $('spd').value = pct; $('spdOut').textContent = pct + '% af tempói lagsins (' + Math.round(s.bpm * s.speed) + ' BPM)';
+  $('bpbVal').textContent = s.bpb;
+  $('fsVal').textContent = Math.round(S.fontPx);
+  $('optClick').checked = !!s.click; $('optCount').checked = !!s.countIn;
+  $('optLabels').checked = !!s.labels; $('optCompact').checked = !!s.compact;
+  $('lkPaper').setAttribute('aria-pressed', PREFS.look === 'paper'); $('lkDark').setAttribute('aria-pressed', PREFS.look !== 'paper');
+  $('mFollow').setAttribute('aria-pressed', S.mode === 'follow'); $('mFit').setAttribute('aria-pressed', S.mode === 'fit');
+  $('bLoop').setAttribute('aria-pressed', S.loop != null);
+  $('pFav').setAttribute('aria-pressed', !!s.fav); $('pFav').setAttribute('aria-label', s.fav ? 'Taka úr uppáhalds' : 'Setja í uppáhalds');
+  $('optBass').checked = s.bass !== false; $('bassVol').value = Math.round(PREFS.bassVol * 100);
+  $('sFollow').setAttribute('aria-pressed', S.mode === 'follow'); $('sFit').setAttribute('aria-pressed', S.mode === 'fit');
+  $('pMode').setAttribute('aria-pressed', S.mode === 'fit');
+  S.els.forEach((el, i) => el.classList.toggle('loop', i === S.loop));
+}
+
+/* ---------- views ---------- */
+function show(v){
+  ['vLib','vEdit','vPlay'].forEach(id => { $(id).hidden = id !== v; });
+  if (v !== 'vPlay'){ pause(); wake(false); }
+}
+S.filter = 'all'; S.newFolder = false; S.delFolderArm = false;
+function renderChips(){
+  const folders = allFolders();
+  if (S.filter.startsWith('f:') && !folders.includes(S.filter.slice(2))) S.filter = 'all';
+  const nFav = S.songs.filter(s => s.fav).length;
+  let h = '<button class="chip" data-f="all" aria-pressed="' + (S.filter === 'all') + '">Öll lög</button>'
+        + '<button class="chip" data-f="fav" aria-pressed="' + (S.filter === 'fav') + '">' + STAR_SVG + 'Uppáhalds' + (nFav ? ' · ' + nFav : '') + '</button>';
+  folders.forEach(f => {
+    const n = S.songs.filter(s => s.folder === f).length;
+    h += '<button class="chip" data-f="f:' + esc(f) + '" aria-pressed="' + (S.filter === 'f:' + f) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 6.5h6l2 2.5h10v9.5H3z"/></svg>' + esc(f) + ' · ' + n + '</button>';
+  });
+  h += S.newFolder ? '<input class="chipin" id="newFolderIn" placeholder="Heiti möppu" autocomplete="off" aria-label="Heiti nýrrar möppu">'
+                   : '<button class="chip chip-new" data-f="new">+ Ný mappa</button>';
+  $('chips').innerHTML = h;
+  if (S.newFolder){ const i = $('newFolderIn'); i.focus(); i.onkeydown = e => { if (e.key === 'Enter') commitFolder(i.value); else if (e.key === 'Escape'){ S.newFolder = false; renderLib(); } }; i.onblur = () => commitFolder(i.value); }
+}
+function commitFolder(name){
+  if (!S.newFolder) return;
+  S.newFolder = false; name = String(name || '').trim().slice(0, 40);
+  if (name){ if (!FMETA.folders.includes(name)) { FMETA.folders.push(name); saveFolders(); } S.filter = 'f:' + name; }
+  renderLib();
+}
+function renderLib(){
+  renderChips();
+  const q = $('q').value.trim().toLowerCase();
+  const f = S.filter;
+  const list = S.songs.slice().sort((a, b) => (b.fav ? 1 : 0) - (a.fav ? 1 : 0) || b.updated - a.updated)
+    .filter(s => !q || (s.title + ' ' + s.artist).toLowerCase().includes(q))
+    .filter(s => f === 'all' || (f === 'fav' ? s.fav : s.folder === f.slice(2)));
+  $('list').innerHTML = list.length ? list.map(s =>
+    '<div class="songrow"><button class="song" data-id="' + s.id + '"><span class="st"><b>' + esc(s.title || 'Án titils') + (s.example ? '<span class="tag">Dæmi</span>' : '') + (s.pending && !s.raw ? '<span class="tag">Sæki tab…</span>' : '') + '</b><span>' + esc(s.artist || '—') + (s.folder && !f.startsWith('f:') ? ' · ' + esc(s.folder) : '') + '</span></span><span class="meta">' + s.bpm + ' BPM<br>' + s.bpb + '/4</span></button>'
+    + '<button class="star" data-star="' + s.id + '" aria-pressed="' + !!s.fav + '" aria-label="' + (s.fav ? 'Taka úr uppáhalds' : 'Setja í uppáhalds') + '">' + STAR_SVG + '</button></div>'
+  ).join('') : '<div class="empty">' + (q ? 'Ekkert lag passar við leitina.' : f === 'fav' ? 'Engin uppáhaldslög ennþá. Ýttu á stjörnuna við lag.' : f.startsWith('f:') ? 'Þessi mappa er tóm. Opnaðu lag, ýttu á blýantinn og veldu möppuna, eða búðu til nýtt tab hér.' : 'Ekkert tab ennþá. Ýttu á „Nýtt tab“ og límdu inn.') + '</div>';
+  const fa = $('folderAct');
+  if (f.startsWith('f:')){
+    fa.hidden = false;
+    fa.innerHTML = '<button class="btn danger" id="delFolder">' + (S.delFolderArm ? 'Ýttu aftur til að eyða möppunni' : 'Eyða möppunni „' + esc(f.slice(2)) + '“') + '</button>';
+  } else { fa.hidden = true; fa.innerHTML = ''; }
+}
+function toggleFav(s){ s.fav = !s.fav; s.updated = Date.now(); persist(); pushSong(s); }
+function openPlayer(song){
+  S.song = song; S.tuning = tuningOf(song.raw); S.parsed = prepare(song); S.mode = song.mode || 'follow';
+  S.pos = 0; S.loop = null; S.cur = -1;
+  $('pTitle').textContent = song.title || 'Án titils'; $('pArtist').textContent = song.artist || '';
+  show('vPlay'); $('stage').scrollTop = 0;
+  render(); syncPlayerUI(); wake(true);
+  const h = $('hint'); h.style.opacity = 1; h.hidden = false; clearTimeout(S.hintT); S.hintT = setTimeout(hideHint, 4000);
+}
+function hideHint(){ $('hint').style.opacity = 0; }
+
+/* Editor */
+function slugInfo(u){
+  try {
+    const url = new URL(u); const parts = url.pathname.split('/').filter(Boolean);
+    const tc = s => decodeURIComponent(s).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+    if (/ultimate-guitar/.test(url.host) && parts[0] === 'tab' && parts.length >= 3)
+      return { artist: tc(parts[1]), title: tc(parts[2].replace(/-\d+$/, '').replace(/-(bass|tabs?|chords|guitar-pro|official|ver-\d+)$/g, '').replace(/-(bass|tabs?)$/, '')) };
+    const last = (parts[parts.length - 1] || '').replace(/\.\w+$/, '').replace(/-s?\d+$/, '').replace(/-(bass|tab|tabs|chords)(-tab)?$/, '');
+    return last ? { title: tc(last) } : {};
+  } catch(e){ return {}; }
+}
+function updateUrlNote(){
+  const u = $('fUrl').value.trim(), ok = /^https?:\/\/\S+$/i.test(u);
+  if (ok) $('urlOpen').href = u; else $('urlNote').hidden = true;
+}
+function updateSum(){
+  const raw = $('fRaw').value; const el = $('sum');
+  if (!raw.trim()){ el.textContent = ''; el.className = 'sum'; return; }
+  let st = 0, bars = 0, ch = 0, secs = 0;
+  parse(raw).forEach(items => items.forEach(it => {
+    if (it.type === 'stave'){ st++; bars += it.bars.length; ch += it.lines.filter(l => l.kind === 'chord').length; }
+    else if (it.kind === 'chord') ch++; else if (it.kind === 'header') secs++;
+  }));
+  if (!st){ el.className = 'sum'; el.textContent = 'Engin tab-lína fannst enn. Tab-línur líta svona út: G|---5---|'; return; }
+  el.className = 'sum ok';
+  el.textContent = 'Fann ' + st + ' tab-línu' + (st === 1 ? '' : 'r') + ' · ' + bars + ' takta · ' + ch + ' hljómalínu' + (ch === 1 ? '' : 'r') + (secs ? ' · ' + secs + ' kaflaheiti' : '');
+}
+function openEditor(song){
+  S.editing = song || null; S.delArm = false;
+  $('eHead').textContent = song ? 'Breyta tabi' : 'Nýtt tab';
+  $('fTitle').value = song ? song.title : ''; $('fArtist').value = song ? song.artist : '';
+  $('fUrl').value = song ? (song.url || '') : ''; $('fBpm').value = song ? song.bpm : 80; $('fBpb').value = song ? song.bpb : 4;
+  $('fRaw').value = song ? song.raw : '';
+  delete $('fBpm').dataset.touched;
+  $('eDel').hidden = !song; $('eDel').textContent = 'Eyða tabi';
+  const cur = song ? (song.folder || '') : (S.filter.startsWith('f:') ? S.filter.slice(2) : '');
+  $('fFolder').innerHTML = '<option value="">Engin mappa</option>' + allFolders().map(f => '<option value="' + esc(f) + '"' + (f === cur ? ' selected' : '') + '>' + esc(f) + '</option>').join('') + '<option value="__new">+ Ný mappa…</option>';
+  $('fFolderNew').hidden = true; $('fFolderNew').value = '';
+  updateUrlNote(); updateSum(); fetchMsg(''); shotMsg(''); $('urlNote').hidden = true; show('vEdit');
+  if (!song) setTimeout(() => $('fUrl').focus(), 50);
+}
+function saveEditor(){
+  const raw = $('fRaw').value;
+  const hasUrl = /^https?:\/\/\S+$/i.test($('fUrl').value.trim());
+  if (STANDALONE && !raw.trim()){
+    fetchMsg(hasUrl ? 'Símaappið getur ekki sótt af hlekk sjálft. Opnaðu síðuna, ýttu á „Senda í Bassatab“ bókamerkið og límdu tabið hér.' : 'Tabið vantar. Límdu tabið í stóra reitinn áður en þú vistar.', 'err');
+    if (hasUrl) $('urlNote').hidden = false;
+    $('fetchMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  if (!raw.trim() && !hasUrl){
+    fetchMsg('Tabið vantar. Límdu hlekk á tabið eða tabið sjálft í stóra reitinn.', 'err');
+    $('fetchMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  if (!raw.trim() && !$('fTitle').value.trim()){ const i = slugInfo($('fUrl').value.trim()); if (i.title) $('fTitle').value = i.title; if (i.artist && !$('fArtist').value.trim()) $('fArtist').value = i.artist; }
+  const data = {
+    title: $('fTitle').value.trim() || 'Án titils', artist: $('fArtist').value.trim(), url: $('fUrl').value.trim(), raw: clean(raw),
+    bpm: Math.max(20, Math.min(320, parseInt($('fBpm').value, 10) || 100)), bpb: Math.max(1, Math.min(16, parseInt($('fBpb').value, 10) || 4)), updated: Date.now(),
+    pending: !raw.trim() && hasUrl, fetchError: ''
+  };
+  let folder = $('fFolder').value;
+  if (folder === '__new'){ folder = $('fFolderNew').value.trim().slice(0, 40); if (folder && !FMETA.folders.includes(folder)){ FMETA.folders.push(folder); saveFolders(); } }
+  data.folder = folder || '';
+  let song = S.editing;
+  if (song){ Object.assign(song, data); delete song.example; }
+  else { song = newSong(data); S.songs.push(song); }
+  persist(); pushSong(song); renderLib(); openPlayer(song);
+}
+
+/* ---------- fetch a tab from a link (Claude desktop app's browser) ---------- */
+const UI_MARK = /^(capo|key|difficulty|strumming|author|backing track|check out the tab|official version|tuning:\s*$|autoscroll|speed:)/i;
+function extractTab(text){
+  let lines = String(text || '').replace(/\r/g, '').split('\n');
+  const sep = lines.findIndex(l => l.trim() === '---');
+  if (sep >= 0 && sep < 10) lines = lines.slice(sep + 1);
+  const isT = lines.map(l => isTab(l));
+  const f = isT.indexOf(true), l = isT.lastIndexOf(true);
+  if (f < 0) return null;
+  let s = Math.max(0, f - 14);
+  for (let i = f - 1; i >= Math.max(0, f - 60); i--){ if (UI_MARK.test(lines[i].trim())){ s = i + 1; break; } }
+  let e = l;
+  while (e + 1 < lines.length && e - l < 4 && lines[e + 1].trim() && !/^x$/i.test(lines[e + 1].trim())) e++;
+  return clean(lines.slice(s, e + 1).join('\n'));
+}
+function titleFromPage(text){
+  const m = String(text || '').match(/^Title:\s*(.+)$/m); if (!m) return null;
+  const t = m[1].replace(/\s*@.*$/, '').trim();
+  const b = t.match(/^(.+?)\s+(?:(?:bass|guitar)\s+)?(?:tabs?|chords|tab)?\s*by\s+(.+)$/i);
+  return b ? { title: niceCase(b[1].replace(/\s+(bass|tabs?)$/i, '')), artist: b[2].trim() } : null;
+}
+function fetchMsg(t, cls){ const el = $('fetchMsg'); el.textContent = t; el.className = 'fetchmsg' + (cls ? ' ' + cls : ''); }
+async function fetchFromUrl(){
+  const url = $('fUrl').value.trim();
+  if (!/^https?:\/\/\S+$/i.test(url)){ fetchMsg('Límdu fyrst hlekk sem byrjar á https://', 'err'); $('fUrl').focus(); return; }
+  const btn = $('fetchBtn'); btn.disabled = true; btn.textContent = 'Sæki…';
+  fetchMsg('Opna síðuna og les tabið…');
+  try {
+    let mcp = null;
+    try { mcp = window.claude && window.claude.use ? await window.claude.use('mcp') : null; } catch(e){}
+    if (!mcp) throw { code: 'no_mcp' };
+    await mcp.callTool('host:claude_browser', 'navigate', { url }, { cache: false });
+    let text = '';
+    for (let i = 0; i < 3 && !extractTab(text); i++){
+      if (i) await new Promise(r => setTimeout(r, 1500));
+      const r = await mcp.callTool('host:claude_browser', 'get_page_text', { max_chars: 200000 }, { cache: false });
+      text = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n') || (typeof r.payload === 'string' ? r.payload : '');
+    }
+    const tab = extractTab(text);
+    if (!tab){ fetchMsg('Síðan opnaðist en þar fannst ekkert tab í textaformi. Sumar síður (t.d. Songsterr) teikna tabið sem mynd. Prófaðu aðra útgáfu eða afritaðu og límdu.', 'err'); $('urlNote').hidden = false; return; }
+    $('fRaw').value = tab; updateSum();
+    const info = titleFromPage(text) || detectTitle(tab) || slugInfo(url);
+    if (info){ if (info.title && !$('fTitle').value.trim()) $('fTitle').value = info.title; if (info.artist && !$('fArtist').value.trim()) $('fArtist').value = info.artist; }
+    $('urlNote').hidden = true;
+    fetchMsg('Tabið er komið inn. Skoðaðu það og ýttu á „Vista og spila“.', 'ok');
+  } catch(e){
+    const code = e && e.code;
+    $('urlNote').hidden = false;
+    if (code === 'no_mcp' || code === 'server_not_connected' || code === 'capability_disabled' || code === 'unavailable')
+      fetchMsg('Ýttu bara á „Vista og spila“. Claude á Macanum þínum sækir tabið af hlekknum og setur það inn, oftast innan 15 mínútna.', 'ok');
+    else if (code === 'not_granted' || code === 'consent_required')
+      fetchMsg('Appið fékk ekki leyfi til að nota vafrann. Ýttu aftur á „Sækja tab“ og veldu Leyfa.', 'err');
+    else fetchMsg('Ekki tókst að sækja síðuna' + (code ? ' (' + code + ')' : '') + '. Notaðu skjáskot í staðinn, sjá skrefin hér fyrir neðan.', 'err');
+  } finally { btn.disabled = false; btn.textContent = 'Sækja tab'; }
+}
+
+/* ---------- read a tab from screenshots (Claude vision) ---------- */
+const SHOT_PROMPT = `These images are screenshots of a bass guitar tab from a website, in reading order (later images continue the earlier ones; skip lines repeated across overlapping screenshots).
+Transcribe the tab EXACTLY as plain monospace ASCII text:
+- Keep every character and its column position: dashes, bar lines |, fret numbers, letters like h p / \\ x, dots, and spacing.
+- Every string line of one stave must keep the same length as in the image. Count dashes carefully.
+- Keep string names (G| D| A| E|) only if they are shown. Keep section names (INTRO, VERSE 1, [Chorus]...), chord names above the staff, annotation lines like "ss" or "PM" in their exact columns, and short notes such as tuning.
+- If the song title and artist are visible, put them on the first line as: Title - Artist
+- Leave out website menus, buttons, ads, view counts, comments and ratings.
+Answer with ONLY the transcription inside one \`\`\`text code block.`;
+function setShotBusy(b){ const l = $('shotBtn'); l.setAttribute('aria-disabled', b ? 'true' : 'false'); l.querySelector('b').textContent = b ? 'Les…' : 'Mynd eða skjáskot'; }
+/* ---------- import from files: text, PDF, images ---------- */
+const isImg = f => /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|heic|heif)$/i.test(f.name);
+const isPdf = f => /pdf/.test(f.type) || /\.pdf$/i.test(f.name);
+function loadScript(src){ return new Promise((ok, no) => { if (document.querySelector('script[src="' + src + '"]')) return ok(); const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => no(new Error('load')); document.head.appendChild(s); }); }
+function appendRaw(text, name){
+  const tab = clean(text); if (!tab) return false;
+  const cur = $('fRaw').value.trim();
+  $('fRaw').value = cur ? cur + '\n\n' + tab : tab;
+  if (name && !$('fTitle').value.trim() && !detectTitle(tab)) $('fTitle').value = name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+  $('fRaw').dispatchEvent(new Event('input')); updateSum();
+  return parse(tab).some(items => items.some(it => it.type === 'stave'));
+}
+async function pdfToText(file){
+  const V = '3.11.174';
+  await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@' + V + '/build/pdf.min.js');
+  const lib = window.pdfjsLib; lib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + V + '/build/pdf.worker.min.js';
+  const doc = await lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const pages = [];
+  for (let i = 1; i <= doc.numPages; i++){ const pg = await doc.getPage(i); pages.push((await pg.getTextContent()).items.filter(it => it.str && it.str.length)); }
+  const all = pages.flat();
+  const cws = all.filter(it => it.str.length >= 3 && it.width > 0).map(it => it.width / it.str.length).sort((a, b) => a - b);
+  const cw = cws.length ? cws[cws.length >> 1] : 6;
+  const minX = Math.min(...all.map(it => it.transform[4]));
+  const out = [];
+  pages.forEach(items => {
+    const rows = [];
+    items.forEach(it => { const y = it.transform[5]; let r = rows.find(r => Math.abs(r.y - y) < 2); if (!r){ r = { y, items: [] }; rows.push(r); } r.items.push(it); });
+    rows.sort((a, b) => b.y - a.y);
+    const lh = rows.length > 1 ? Math.min(...rows.slice(1).map((r, i) => rows[i].y - r.y).filter(d => d > 1)) : 12;
+    rows.forEach((r, i) => {
+      if (i && rows[i - 1].y - r.y > lh * 1.6) out.push('');
+      let line = '';
+      r.items.sort((a, b) => a.transform[4] - b.transform[4]).forEach(it => { const col = Math.max(line.length, Math.round((it.transform[4] - minX) / cw)); line = line.padEnd(col, ' ') + it.str; });
+      out.push(line);
+    });
+    out.push('');
+  });
+  return out.join('\n');
+}
+function fixOcr(t){
+  const ls = fixOcrChars(t).split('\n');
+  /* Empty strings (only dashes) are read as noise like "Eh hhh hd": rebuild them from the stave line next to them */
+  const junk = l => l.trim().length >= 6 && /^[\sEeAaHhDdGgsx()~]+$/.test(l);
+  for (let pass = 0; pass < 2; pass++){
+    for (let i = 0; i < ls.length; i++){
+      if (!junk(ls[i])) continue;
+      const nb = [ls[i - 1], ls[i + 1]].find(x => x && isTab(x));
+      if (nb) ls[i] = nb.replace(/[^|]/g, '-');
+    }
+  }
+  return ls.join('\n');
+}
+function fixOcrChars(t){
+  return t.split('\n').map(l => {
+    if ((l.match(/[-–—_]/g) || []).length < 4) return l;
+    return l.replace(/[–—_=]/g, '-').replace(/(^|[-\s])[Il!\]\[](?=[-\d]|$)/g, '$1|').replace(/(?<=-)[Il!\]\[](?=[-\d\s]|$)/g, '|').replace(/(?<=-)[Oo](?=-)/g, '0').replace(/(?<=-)[Ss](?=-)/g, '5');
+  }).join('\n');
+}
+/* Bigger, grey, high-contrast copy of the picture: thin dashes and digits read much better */
+async function prepImage(file){
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(3, Math.max(1, 2200 / bmp.width));
+  const c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(bmp, 0, 0, c.width, c.height);
+  const d = x.getImageData(0, 0, c.width, c.height), p = d.data;
+  let sum = 0; for (let i = 0; i < p.length; i += 4) sum += 0.3 * p[i] + 0.59 * p[i + 1] + 0.11 * p[i + 2];
+  const mean = sum / (p.length / 4), dark = mean < 128;
+  for (let i = 0; i < p.length; i += 4){ let v = 0.3 * p[i] + 0.59 * p[i + 1] + 0.11 * p[i + 2]; if (dark) v = 255 - v; v = v < 165 ? 0 : 255; p[i] = p[i + 1] = p[i + 2] = v; }
+  x.putImageData(d, 0, 0);
+  return c;
+}
+async function ocrImages(files){
+  setShotBusy(true);
+  shotMsg('Les myndina í símanum sjálfum… fyrsta skiptið þarf netsamband og getur tekið allt að mínútu.');
+  try {
+    await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+    const worker = await window.Tesseract.createWorker('eng');
+    await worker.setParameters({ tessedit_pageseg_mode: '6', preserve_interword_spaces: '1',
+      tessedit_char_whitelist: '0123456789-|hpsx/\\~()GDAEgdae ' });
+    let text = '';
+    for (let i = 0; i < files.length; i++){ shotMsg('Les mynd ' + (i + 1) + ' af ' + files.length + '…'); const { data } = await worker.recognize(await prepImage(files[i])); text += (text ? '\n\n' : '') + fixOcr(data.text || ''); }
+    await worker.terminate();
+    const ok = appendRaw(text, files.length === 1 ? files[0].name : '');
+    shotMsg(ok ? 'Tabið er komið inn. Myndalestur í símanum er ekki fullkominn: berðu tabið saman við myndina og lagaðu tölur og strik ef þarf.' : 'Ég náði ekki að lesa tab-línur af myndinni. Prófaðu skýrara skjáskot þar sem tabið fyllir myndina, eða afritaðu textann.', ok ? 'ok' : 'err');
+  } catch(e){ shotMsg('Ekki tókst að lesa myndina. Fyrsta skiptið þarf netsamband til að sækja myndalesarann.', 'err'); }
+  finally { setShotBusy(false); $('shotFile').value = ''; }
+}
+async function importFiles(list){
+  const files = [...(list || [])]; if (!files.length) return;
+  const imgs = files.filter(isImg), docs = files.filter(f => !isImg(f));
+  let got = 0, bad = [];
+  for (const f of docs){
+    try {
+      const text = isPdf(f) ? (shotMsg('Les PDF-skrána…'), await pdfToText(f)) : await f.text();
+      if (appendRaw(text, f.name)) got++; else bad.push(f.name);
+    } catch(e){ bad.push(f.name); }
+  }
+  if (docs.length) shotMsg(got ? 'Tabið úr ' + (got === 1 ? 'skránni' : got + ' skrám') + ' er komið inn. Skoðaðu það og ýttu á „Vista og spila“.' + (bad.length ? ' Engin tab-lína fannst í: ' + bad.join(', ') : '') : 'Engin tab-lína fannst í skránni. Er þetta textaskrá eða PDF með texta (ekki mynd)?', got ? 'ok' : 'err');
+  if (imgs.length){
+    let sample = null;
+    try { sample = window.claude && window.claude.use ? await window.claude.use('sample') : null; } catch(e){}
+    if (sample) await readShots(imgs); else await ocrImages(imgs);
+  }
+  $('shotFile').value = '';
+}
+function shotMsg(t, cls){ const el = $('shotMsg'); el.textContent = t; el.className = 'fetchmsg' + (cls ? ' ' + cls : ''); }
+async function readShots(files){
+  files = [...files].filter(f => /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|heic)$/i.test(f.name));
+  if (!files.length){ shotMsg('Veldu mynd (PNG eða JPG).', 'err'); return; }
+  let sample = null;
+  try { sample = window.claude && window.claude.use ? await window.claude.use('sample') : null; } catch(e){}
+  if (!sample) return ocrImages(files);
+  let max = 5;
+  try { const lim = await sample.limits(); if (!lim.images){ shotMsg('Myndalestur er ekki í boði hérna. Prófaðu Claude-appið eða claude.ai í vafra.', 'err'); return; } max = lim.images.maxCount || max; } catch(e){}
+  if (files.length > max){ shotMsg('Hámark ' + max + ' myndir í einu. Ég les fyrstu ' + max + '.', ''); files = files.slice(0, max); }
+  setShotBusy(true);
+  shotMsg('Claude les tabið af ' + (files.length === 1 ? 'myndinni' : files.length + ' myndum') + '… þetta tekur smástund.');
+  try {
+    const r = await sample(SHOT_PROMPT, { images: files, modelTier: 'complex', cache: false,
+      onText: ({ text }) => { const n = (text.match(/\n/g) || []).length; if (n > 2) shotMsg('Les… ' + n + ' línur komnar.'); } });
+    const m = r.text.match(/```(?:text|txt)?\s*\n([\s\S]*?)(?:```|$)/);
+    const tab = clean(m ? m[1] : r.text);
+    if (!tab || !parse(tab).some(items => items.some(it => it.type === 'stave'))){
+      shotMsg('Ég fann ekkert tab á myndinni. Taktu skjáskot þar sem tab-línurnar sjást vel.', 'err'); return;
+    }
+    const cur = $('fRaw').value.trim();
+    $('fRaw').value = cur ? cur + '\n\n' + tab : tab;
+    $('fRaw').dispatchEvent(new Event('input'));
+    updateSum();
+    shotMsg('Tabið er komið inn' + (r.truncated ? ', en svarið var stytt. Lestu það yfir og bættu við því sem vantar' : '') + '. Berðu það saman við síðuna og ýttu á „Vista og spila“.', r.truncated ? 'err' : 'ok');
+    $('fRaw').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(e){
+    const c = e && e.code;
+    if (c === 'not_granted') shotMsg('Bassatab fékk ekki leyfi til að nota Claude. Þú getur leyft það í Heimildum (Permissions) síðunnar.', 'err');
+    else if (c === 'rate_limited') shotMsg('Of margar beiðnir í einu. Bíddu aðeins og reyndu aftur.', 'err');
+    else if (c === 'image_rejected') shotMsg('Ekki tókst að lesa myndina. Notaðu PNG eða JPG.', 'err');
+    else shotMsg('Ekki tókst að lesa myndina' + (c ? ' (' + c + ')' : '') + '. Reyndu aftur.', 'err');
+  } finally { setShotBusy(false); $('shotFile').value = ''; }
+}
+
+/* ---------- "Senda í Bassatab" bookmarklet: runs on the tab site, copies the tab ---------- */
+const APP_URL = STANDALONE ? '' : 'https://claude.ai/artifact/BiPRRWWJeWfxSjLpTykqvq';
+function bookmarkletBody(){
+  var APP = '__APP__';
+  var isT = function(l){ l = l.replace(/\s+$/, ''); var b = l.replace(/^\s*[A-Ga-g]?[#b]?\s*/, ''); var d = (b.match(/-/g) || []).length;
+    return b.length > 4 && d >= 3 && d / b.length > .3 && (b.match(/[-0-9|:xXhpbrstvg\/\\~().^*<>=\[\] ]/g) || []).length / b.length >= .85; };
+  var best = null, bs = -1e18;
+  document.querySelectorAll('pre,code,div,section,article,td').forEach(function(e){
+    var t = e.innerText || ''; if (t.length > 300000) return;
+    var n = t.split('\n').filter(isT).length; if (n < 2) return;
+    var s = n * 1e6 - t.length; if (s > bs){ bs = s; best = t; }
+  });
+  if (!best){ alert('Bassatab: Fann ekkert tab á þessari síðu.'); return; }
+  best = best.replace(/\r/g, '').replace(/(\n\s*X\s*)+\s*$/, '');
+  var ti = document.title.replace(/\s*@.*$/, '').replace(/\s+(?:BASS\s+|GUITAR\s+)?(?:TABS?|CHORDS)\s+by\s+/i, ' - ');
+  var txt = '@@BASSATAB@@\n' + ti + '\n' + location.href + '\n' + best;
+  var done = function(){ if (!APP){ alert('Bassatab: Tabið er afritað. Opnaðu Bassatab á heimaskjánum, ýttu á „Nýtt tab“ og límdu.'); return; } if (confirm('Bassatab: Tabið er afritað. Opna Bassatab núna? Ýttu þar á „Nýtt tab“ og límdu.')) location.href = APP; };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, function(){ prompt('Bassatab: Afritaðu allan textann:', txt); });
+  else prompt('Bassatab: Afritaðu allan textann:', txt);
+}
+const BOOKMARKLET = 'javascript:' + encodeURIComponent('(' + bookmarkletBody.toString().replace('__APP__', APP_URL) + ')()');
+/* Text sent by the bookmarklet: header lines carry title, artist and link */
+function takeBookmarkletPaste(){
+  const v = $('fRaw').value;
+  const i = v.indexOf('@@BASSATAB@@'); if (i < 0) return false;
+  const lines = v.slice(i).replace(/\r/g, '').split('\n');
+  const head = lines[1] || '', url = (lines[2] || '').trim();
+  const m = head.match(/^(.*?)\s+-\s+(.*)$/);
+  if (m){ if (!$('fTitle').value.trim()) $('fTitle').value = niceCase(m[1]); if (!$('fArtist').value.trim()) $('fArtist').value = m[2].trim(); }
+  else if (head.trim() && !$('fTitle').value.trim()) $('fTitle').value = niceCase(head);
+  if (/^https?:\/\//.test(url)){ $('fUrl').value = url; updateUrlNote(); }
+  $('fRaw').value = clean(lines.slice(/^https?:\/\//.test(url) ? 3 : 2).join('\n'));
+  $('urlNote').hidden = true; fetchMsg('Tabið kom af síðunni. Skoðaðu það og ýttu á „Vista og spila“.', 'ok');
+  return true;
+}
+function openBm(e){ if (e) e.preventDefault(); $('bmCode').value = BOOKMARKLET; $('bmLink').href = BOOKMARKLET; $('bmMsg').textContent = ''; $('bmBg').hidden = false; }
+
+/* ---------- events ---------- */
+$('newBtn').onclick = () => openEditor(null);
+$('q').oninput = renderLib;
+$('list').onclick = e => {
+  const st = e.target.closest('[data-star]');
+  if (st){ const s = S.songs.find(x => x.id === st.dataset.star); if (s){ toggleFav(s); renderLib(); } return; }
+  const b = e.target.closest('.song'); if (!b) return; const s = S.songs.find(x => x.id === b.dataset.id); if (s) openPlayer(s);
+};
+$('chips').onclick = e => {
+  const c = e.target.closest('[data-f]'); if (!c) return;
+  S.delFolderArm = false;
+  if (c.dataset.f === 'new'){ S.newFolder = true; renderLib(); return; }
+  S.filter = c.dataset.f.startsWith('f:') ? 'f:' + c.textContent.replace(/ · \d+$/, '') : c.dataset.f;
+  renderLib();
+};
+$('folderAct').onclick = e => {
+  if (!e.target.closest('#delFolder')) return;
+  if (!S.delFolderArm){ S.delFolderArm = true; renderLib(); return; }
+  const name = S.filter.slice(2);
+  S.songs.forEach(s => { if (s.folder === name){ s.folder = ''; s.updated = Date.now(); pushSong(s); } });
+  FMETA.folders = FMETA.folders.filter(x => x !== name); saveFolders(); persist();
+  S.filter = 'all'; S.delFolderArm = false; renderLib();
+};
+$('fFolder').onchange = () => { const n = $('fFolder').value === '__new'; $('fFolderNew').hidden = !n; if (n) $('fFolderNew').focus(); };
+$('pFav').onclick = () => { toggleFav(S.song); syncPlayerUI(); };
+$('pMode').onclick = () => (S.mode === 'fit' ? $('mFollow') : $('mFit')).click();
+$('sFollow').onclick = () => $('mFollow').click();
+$('sFit').onclick = () => $('mFit').click();
+$('optBass').onchange = () => { S.song.bass = $('optBass').checked; if (!S.song.bass) stopAllVoices(); else ensureAudio(); saveSong(); };
+$('bassVol').oninput = () => { PREFS.bassVol = +$('bassVol').value / 100; savePrefs(); };
+$('eBack').onclick = $('eCancel').onclick = () => { if (S.editing) openPlayer(S.editing); else show('vLib'); };
+$('eSave').onclick = $('eSave2').onclick = saveEditor;
+$('fetchBtn').onclick = fetchFromUrl;
+$('fBpm').addEventListener('input', () => { $('fBpm').dataset.touched = '1'; });
+$('bmOpen').onclick = openBm; $('bmOpen2').onclick = openBm; document.querySelectorAll('.bmOpen3').forEach(a => { a.onclick = openBm; });
+$('bmClose').onclick = () => { $('bmBg').hidden = true; };
+$('bmBg').onclick = e => { if (e.target === $('bmBg')) $('bmBg').hidden = true; };
+$('bmLink').onclick = e => { e.preventDefault(); $('bmMsg').textContent = 'Dragðu hnappinn upp í bókamerkjastikuna. Hann virkar á tab-síðunni, ekki hér.'; };
+$('bmCopy').onclick = async () => {
+  try { await navigator.clipboard.writeText(BOOKMARKLET); $('bmMsg').textContent = 'Kóðinn er afritaður. Límdu hann sem slóð bókamerkisins.'; }
+  catch(e){ $('bmCode').focus(); $('bmCode').select(); $('bmMsg').textContent = 'Kóðinn er valinn. Afritaðu hann handvirkt.'; }
+};
+/* Cmd+V anywhere in the library with a tab from the button opens a new tab straight away */
+document.addEventListener('paste', e => {
+  if ($('vLib').hidden || /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  const t = e.clipboardData && e.clipboardData.getData('text/plain');
+  if (t && (t.includes('@@BASSATAB@@') || parse(t).some(it => it.some(x => x.type === 'stave')))){
+    e.preventDefault(); openEditor(null); $('fRaw').value = t; $('fRaw').dispatchEvent(new Event('input'));
+  }
+});
+$('shotFile').onchange = () => importFiles($('shotFile').files);
+$('docFile').onchange = () => { importFiles($('docFile').files).finally(() => { $('docFile').value = ''; }); };
+$('wPaste').onclick = () => { $('fRaw').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('fRaw').focus(); shotMsg('Haltu fingri í stóra reitnum og veldu Líma (á tölvu: Cmd+V).', 'ok'); };
+$('wLink').onclick = () => { $('fUrl').focus(); $('urlNote').hidden = false; $('urlOpen').href = $('fUrl').value.trim() || '#'; };
+$('libSet').onclick = () => { syncGeneral(); $('gsetBg').hidden = false; };
+$('gsetClose').onclick = () => { $('gsetBg').hidden = true; };
+$('gsetBg').onclick = e => { if (e.target === $('gsetBg')) $('gsetBg').hidden = true; };
+$('gLkPaper').onclick = () => { PREFS.look = 'paper'; savePrefs(); syncGeneral(); };
+$('gLkDark').onclick = () => { PREFS.look = 'dark'; savePrefs(); syncGeneral(); };
+$('gBassVol').oninput = () => { PREFS.bassVol = +$('gBassVol').value / 100; savePrefs(); };
+function syncGeneral(){
+  $('gLkPaper').setAttribute('aria-pressed', PREFS.look === 'paper'); $('gLkDark').setAttribute('aria-pressed', PREFS.look !== 'paper');
+  $('gBassVol').value = Math.round(PREFS.bassVol * 100);
+  $('verInfo').textContent = 'Bassatab' + (window.BASSATAB_VERSION ? ' · útgáfa ' + window.BASSATAB_VERSION : '') + ' · ' + S.songs.length + ' lög';
+}
+(() => {
+  const z = $('dropZone');
+  ['dragenter','dragover'].forEach(ev => z.addEventListener(ev, e => { e.preventDefault(); z.style.borderColor = 'var(--accent)'; }));
+  ['dragleave','drop'].forEach(ev => z.addEventListener(ev, e => { e.preventDefault(); z.style.borderColor = ''; }));
+  z.addEventListener('drop', e => importFiles(e.dataTransfer && e.dataTransfer.files));
+  $('fRaw').addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length){ e.preventDefault(); importFiles(e.dataTransfer.files); } });
+})();
+document.addEventListener('paste', e => { if ($('vEdit').hidden) return; const imgs = [...(e.clipboardData && e.clipboardData.files || [])].filter(f => /^image\//.test(f.type)); if (imgs.length){ e.preventDefault(); importFiles(imgs); } });
+$('fUrl').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); fetchFromUrl(); } });
+$('eDel').onclick = () => {
+  if (!S.delArm){ S.delArm = true; $('eDel').textContent = 'Ýttu aftur til að eyða'; return; }
+  removeRemote(S.editing.id);
+  S.songs = S.songs.filter(s => s !== S.editing); persist(); S.editing = null; renderLib(); show('vLib');
+};
+$('fUrl').oninput = () => {
+  updateUrlNote();
+  const info = slugInfo($('fUrl').value.trim());
+  if (info.title && !$('fTitle').value) $('fTitle').value = info.title;
+  if (info.artist && !$('fArtist').value) $('fArtist').value = info.artist;
+};
+let sumT; $('fRaw').oninput = () => {
+  takeBookmarkletPaste();
+  const v = $('fRaw').value.trim();
+  if (!S.editing && !$('fBpm').dataset.touched){ const t = tempoOf(v); $('fBpm').value = t || 80; }
+  if (/^https?:\/\/\S+$/i.test(v)){ $('fUrl').value = v; $('fRaw').value = ''; $('fUrl').oninput(); fetchMsg(STANDALONE ? 'Þetta er hlekkur. Opnaðu síðuna, ýttu á „Senda í Bassatab“ bókamerkið og límdu tabið hér.' : 'Þetta er hlekkur. Ýttu á „Sækja tab“ til að sækja tabið af síðunni.', 'ok'); if (STANDALONE) $('urlNote').hidden = false; $('fetchBtn').focus(); }
+  clearTimeout(sumT); sumT = setTimeout(() => { updateSum(); if (!$("fTitle").value.trim()){ const d = detectTitle($("fRaw").value); if (d){ $("fTitle").value = d.title; if (!$("fArtist").value.trim()) $("fArtist").value = d.artist; } } }, 150);
+};
+
+$('pBack').onclick = () => { renderLib(); show('vLib'); };
+$('pEdit').onclick = () => openEditor(S.song);
+$('mFollow').onclick = () => { S.mode = S.song.mode = 'follow'; saveSong(); render(); syncPlayerUI(); if (S.els[S.cur]) followTo(S.els[S.cur]); };
+$('mFit').onclick = () => { S.mode = S.song.mode = 'fit'; saveSong(); $('stage').scrollTop = 0; render(); syncPlayerUI(); };
+$('bPlay').onclick = () => S.playing ? pause() : play();
+$('bStart').onclick = () => { S.pos = 0; S.pre = S.playing && S.song.countIn ? -S.song.bpb : 0; S.lastClick = null; S.cur = -1; $('stage').scrollTo({ top: 0 }); draw(false); };
+$('bLoop').onclick = () => {
+  if (S.loop != null) S.loop = null;
+  else { const b = S.bars[Math.min(S.bars.length - 1, Math.floor(S.pos / S.song.bpb))]; S.loop = b ? b.si : null; }
+  syncPlayerUI();
+};
+$('sheet').addEventListener('click', e => {
+  const el = e.target.closest('.stave'); if (!el) return;
+  const st = S.staves[+el.dataset.i]; const r = el.getBoundingClientRect();
+  const x = (e.clientX - r.left) / (chR * S.fontPx);
+  let k = 0; st.bars.forEach((b, j) => { if (x >= b.x0 - 1) k = j; });
+  S.pos = (st.b0 + k) * S.song.bpb; S.lastClick = null;
+  if (S.loop != null) { S.loop = +el.dataset.i; syncPlayerUI(); }
+  draw(false); hideHint();
+});
+function holdRepeat(btn, fn){
+  let t1, t2;
+  const stop = () => { clearTimeout(t1); clearInterval(t2); };
+  btn.addEventListener('pointerdown', e => { e.preventDefault(); fn(); t1 = setTimeout(() => { t2 = setInterval(fn, 70); }, 380); });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev => btn.addEventListener(ev, stop));
+  btn.addEventListener('click', e => { if (e.detail === 0) fn(); });
+}
+holdRepeat($('bpmDn'), () => { setBpm(S.song.bpm - 1); syncPlayerUI(); });
+holdRepeat($('bpmUp'), () => { setBpm(S.song.bpm + 1); syncPlayerUI(); });
+const openSet = () => { syncPlayerUI(); $('setBg').hidden = false; };
+$('bSet').onclick = openSet;
+$('bpmV').onclick = () => {
+  const steps = [1, 0.75, 0.5], i = steps.findIndex(x => Math.abs(x - S.song.speed) < 0.01);
+  S.song.speed = steps[(i + 1) % steps.length]; saveSong(); syncPlayerUI();
+  const h = $('hint'); h.textContent = 'Hraði ' + Math.round(S.song.speed * 100) + '% · ' + Math.round(S.song.bpm * S.song.speed) + ' BPM'; h.style.opacity = 1; clearTimeout(S.hintT); S.hintT = setTimeout(hideHint, 1600);
+};
+$('setClose').onclick = () => { $('setBg').hidden = true; };
+$('setBg').onclick = e => { if (e.target === $('setBg')) $('setBg').hidden = true; };
+$('spd').oninput = () => { S.song.speed = +$('spd').value / 100; saveSong(); syncPlayerUI(); };
+const setBpb = v => { const old = S.song.bpb; S.song.bpb = Math.max(1, Math.min(16, v)); S.pos = S.pos / old * S.song.bpb; saveSong(); buildTimeline(); syncPlayerUI(); draw(false); };
+$('bpbDn').onclick = () => setBpb(S.song.bpb - 1);
+$('bpbUp').onclick = () => setBpb(S.song.bpb + 1);
+/* Font size: works in both modes. Changing size in "Allt" switches to "Fylgja" at that size. */
+let rq = 0;
+function rerender(){ if (rq) return; rq = requestAnimationFrame(() => { rq = 0; render(); syncPlayerUI(); }); }
+function setFontPx(px, save = true){
+  px = Math.round(Math.max(7, Math.min(40, px)) * 2) / 2;
+  if (S.mode === 'fit'){ S.mode = S.song.mode = 'follow'; }
+  if (px === S.song.font && S.mode === 'follow') return;
+  S.song.font = px; if (save) saveSong(); rerender();
+}
+const setFont = d => setFontPx(Math.round(S.fontPx) + d);
+$('fsDn').onclick = () => setFont(-1); $('fsUp').onclick = () => setFont(1);
+$('optLabels').onchange = () => { S.song.labels = $('optLabels').checked; saveSong(); S.parsed = prepare(S.song); render(); syncPlayerUI(); };
+$('optCompact').onchange = () => { S.song.compact = $('optCompact').checked; saveSong(); S.parsed = prepare(S.song); render(); syncPlayerUI(); };
+const setLook = v => { PREFS.look = v; savePrefs(); render(); syncPlayerUI(); };
+$('lkPaper').onclick = () => setLook('paper'); $('lkDark').onclick = () => setLook('dark');
+(() => {
+  const stage = $('stage'); let pinch = null;
+  const dist = e => Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  stage.addEventListener('touchstart', e => { if (e.touches.length === 2) pinch = { d: dist(e), f: S.fontPx }; }, { passive: true });
+  stage.addEventListener('touchmove', e => {
+    if (!pinch || e.touches.length !== 2) return;
+    e.preventDefault(); setFontPx(pinch.f * dist(e) / pinch.d, false);
+  }, { passive: false });
+  stage.addEventListener('touchend', e => { if (pinch && e.touches.length < 2){ pinch = null; saveSong(); hideHint(); } });
+  stage.addEventListener('wheel', e => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); setFontPx(S.fontPx * Math.exp(-e.deltaY * 0.01)); }, { passive: false });
+})();
+$('optClick').onchange = () => { S.song.click = $('optClick').checked; if (S.song.click) ensureAudio(); saveSong(); };
+$('optCount').onchange = () => { S.song.countIn = $('optCount').checked; saveSong(); };
+$('tapBtn').onclick = () => {
+  ensureAudio(); beep(false);
+  const now = performance.now(); if (S.taps.length && now - S.taps[S.taps.length-1] > 2000) S.taps = [];
+  S.taps.push(now); S.taps = S.taps.slice(-6);
+  if (S.taps.length >= 2){
+    const iv = (S.taps[S.taps.length-1] - S.taps[0]) / (S.taps.length - 1);
+    setBpm(60000 / iv); syncPlayerUI(); $('tapBtn').textContent = S.song.bpm + ' BPM';
+  } else $('tapBtn').textContent = 'Áfram…';
+};
+
+/* Backup */
+$('bkCopy').onclick = async () => {
+  const txt = JSON.stringify({ app: 'bassatab', v: 1, songs: S.songs });
+  try { await navigator.clipboard.writeText(txt); $('bkCopy').textContent = 'Afritað ✓ (' + S.songs.length + ' lög)'; }
+  catch(e){ $('bkBg').hidden = false; $('bkText').value = txt; $('bkText').select(); $('bkMsg').textContent = 'Ekki tókst að afrita sjálfkrafa. Textinn er valinn, afritaðu hann handvirkt.'; }
+  setTimeout(() => { $('bkCopy').textContent = 'Afrita'; }, 2500);
+};
+$('bkOpen').onclick = () => { $('bkText').value = ''; $('bkMsg').textContent = ''; $('bkBg').hidden = false; };
+$('bkClose').onclick = () => { $('bkBg').hidden = true; };
+$('bkFile').onchange = () => { const f = $('bkFile').files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $('bkText').value = r.result; }; r.readAsText(f); };
+$('bkDo').onclick = () => {
+  try {
+    const d = JSON.parse($('bkText').value); const arr = Array.isArray(d) ? d : d.songs;
+    if (!Array.isArray(arr)) throw 0;
+    let added = 0, upd = 0;
+    arr.forEach(s => { if (!s || typeof s.raw !== 'string') return; const ex = S.songs.find(x => x.id === s.id); if (ex){ Object.assign(ex, s, { updated: Date.now() }); pushSong(ex); upd++; } else { const n = newSong(s); n.synced = false; n.updated = Date.now(); S.songs.push(n); pushSong(n); added++; } });
+    persist(); renderLib(); $('bkMsg').textContent = added + ' ný lög, ' + upd + ' uppfærð.';
+  } catch(e){ $('bkMsg').textContent = 'Þetta er ekki gilt öryggisafrit. Afritaðu allan textann úr „Afrita öryggisafrit“.'; }
+};
+
+/* Keyboard (tölva) */
+document.addEventListener('keydown', e => {
+  if ($('vPlay').hidden || !$('setBg').hidden || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  if (e.code === 'Space'){ e.preventDefault(); S.playing ? pause() : play(); }
+  else if (e.key === 'ArrowDown' || e.key === 'ArrowRight'){ e.preventDefault(); seekStave(1); }
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft'){ e.preventDefault(); seekStave(-1); }
+  else if (e.key === '+' || e.key === '='){ setBpm(S.song.bpm + (e.shiftKey ? 5 : 1)); syncPlayerUI(); }
+  else if (e.key === '-' || e.key === '_'){ setBpm(S.song.bpm - (e.shiftKey ? 5 : 1)); syncPlayerUI(); }
+  else if (e.key === 'f'){ (S.mode === 'fit' ? $('mFollow') : $('mFit')).click(); }
+  else if (e.key === 'l'){ $('bLoop').click(); }
+  else if (e.key === ']'){ setFont(1); }
+  else if (e.key === '['){ setFont(-1); }
+  else if (e.key === 'Home'){ $('bStart').click(); }
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('vPlay').hidden) wake(true); });
+let rT; new ResizeObserver(() => { clearTimeout(rT); rT = setTimeout(() => { if (!$('vPlay').hidden){ render(); syncPlayerUI(); } }, 120); }).observe($('stage'));
+
+/* ---------- boot ---------- */
+function measure(){
+  const sp = document.createElement('span');
+  sp.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font:100px var(--mono)';
+  sp.textContent = '0'.repeat(50); document.body.appendChild(sp);
+  const w = sp.getBoundingClientRect().width / 5000; sp.remove();
+  if (w > 0.3 && w < 1) chR = w;
+}
+S.songs = load();
+if (!S.songs){
+  S.songs = [newSong({ title: 'Boogie-blús í E', artist: 'Æfingadæmi', raw: sampleRaw(), bpm: 100, bpb: 4, example: true })];
+  persist();
+}
+measure(); renderLib(); startSync();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); if (!$('vPlay').hidden){ render(); syncPlayerUI(); } }).catch(() => {});
+})();
+</script>
+
+<script>if('serviceWorker' in navigator){var had=!!navigator.serviceWorker.controller,done=false;navigator.serviceWorker.addEventListener('controllerchange',function(){if(!had||done)return;var e=document.getElementById('vEdit');if(e&&!e.hidden){addEventListener('visibilitychange',function(){if(!done){done=true;location.reload()}},{once:true});return}done=true;location.reload()});addEventListener('load',function(){navigator.serviceWorker.register('sw.js').then(function(r){r.update()}).catch(function(){})})}</script>
+</body>
+</html>

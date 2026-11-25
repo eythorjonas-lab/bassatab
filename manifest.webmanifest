@@ -1,0 +1,26 @@
+{
+  "name": "Bassatab",
+  "short_name": "Bassatab",
+  "lang": "is",
+  "description": "Bassatab-spilari: límdu tab, spilaðu á réttum hraða, ekkert skrun.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f1317",
+  "theme_color": "#0f1317",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
