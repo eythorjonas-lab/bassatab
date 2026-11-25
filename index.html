@@ -2,7 +2,7 @@
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-kfrT89K5IUZF+C6H5cf9b8GCw/zLPqcnyUQjZAcZ170=' 'sha256-PRNs7HkZ5kv1R8lpr5DXqWZS2Y+H/KVeM0+28KEedzs=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-slTUMjkWg5e309Regq01OZXUbuntRY6SIhoRJK6O/Uc=' 'sha256-SRM6k/spdjsSkAk46hHCZ4o6s4JHKSQUs4bb19B7b58=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bassatab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -40,6 +40,19 @@
   --danger:#c43a2a; color-scheme:light;
 }}
 :root[data-theme="light"]{
+  --bg:#f2f4f6; --panel:#ffffff; --raise:#e7ebef; --line:#d3dae1;
+  --fg:#141c24; --muted:#56636f; --dim:#a7b1bb;
+  --accent:#b06f00; --accent-ink:#ffffff; --chord:#1360a8; --hl:rgba(176,111,0,.12);
+  --danger:#c43a2a; color-scheme:light;
+}
+/* Útlit chosen in the app colours EVERYTHING; placed after the system rules so it wins */
+:root[data-look="dark"]{
+  --bg:#0f1317; --panel:#161c22; --raise:#1f2730; --line:#2a343f;
+  --fg:#e9eef2; --muted:#8a97a4; --dim:#4c5864;
+  --accent:#f1b546; --accent-ink:#1b1305; --chord:#7cc5ff; --hl:rgba(241,181,70,.14);
+  --danger:#ff7d6e; color-scheme:dark;
+}
+:root[data-look="light"]{
   --bg:#f2f4f6; --panel:#ffffff; --raise:#e7ebef; --line:#d3dae1;
   --fg:#141c24; --muted:#56636f; --dim:#a7b1bb;
   --accent:#b06f00; --accent-ink:#ffffff; --chord:#1360a8; --hl:rgba(176,111,0,.12);
@@ -185,6 +198,9 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .bpm .v{min-width:56px;text-align:center;display:flex;flex-direction:column;line-height:1.05}
 .bpm .v b{font-family:var(--mono);font-size:19px;font-variant-numeric:tabular-nums}
 .bpm .v small{font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:600;white-space:nowrap}
+.bpm .v{min-width:66px!important;padding:0 2px}
+.bpm .v small{font-size:9px;letter-spacing:.04em}
+@media (max-width:360px){.bpm .v{min-width:58px!important}.bpm .v small{font-size:8px;letter-spacing:0}}
 .play{width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none;box-shadow:0 4px 18px rgba(241,181,70,.28)}
 .play svg{width:26px;height:26px}
 .tgroup{display:flex;align-items:center;gap:4px}
@@ -237,6 +253,8 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .solo-only{display:none}
 .standalone .solo-only{display:revert}
 .standalone .claude-only{display:none!important}
+.solo-only-row{display:none!important}
+.standalone .solo-only-row{display:flex!important}
 /* Inside the Claude phone app the page can reach below the visible screen, so on phones
    the play bar sits right under the top bar and dialogs open from the top. */
 @media (max-width:700px), (max-height:500px){
@@ -256,7 +274,7 @@ html.vv{height:var(--vvh)}
 @media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
 </style>
 
-<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "991c534";</script>
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "8a9644e";</script>
 </head>
 <body>
 <div id="app">
@@ -271,6 +289,7 @@ html.vv{height:var(--vvh)}
       <button class="btn primary" id="newBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nýtt tab</button>
     </header>
     <div class="scroll"><div class="wrap">
+      <div class="note" id="moveTip" hidden style="margin-bottom:14px"><b>Ertu með lög í Claude-útgáfunni?</b><br>Opnaðu hana, farðu í Stillingar (tannhjólið) og ýttu á „Afrita lögin“. Komdu svo hingað og ýttu á <b>Sækja lögin</b>.<div style="margin-top:10px"><button class="btn primary" id="mvPaste2">Sækja lögin</button></div></div>
       <div class="note" id="installTip" hidden style="margin-bottom:14px"><b>Settu Bassatab á heimaskjáinn</b><br>Ýttu á Deila-táknið (ferningur með ör) í Safari og veldu „Bæta á heimaskjá“. Opnaðu Bassatab alltaf þaðan eftir það: þá virkar það án nets og lögin geymast í því.</div>
       <input class="search" id="q" type="search" placeholder="Leita að lagi eða flytjanda" aria-label="Leita">
       <div class="chips" id="chips" role="group" aria-label="Möppur"></div>
@@ -375,7 +394,7 @@ E|------------|-1--1-1-3---|"></textarea>
     <label class="row" for="optBass"><span>Bassahljóð<small>Spilar nóturnar í tabinu þegar þú ýtir á play. Í iPhone þarf hljóðrofinn á hliðinni að vera á.</small></span><input type="checkbox" id="optBass" class="sw"></label>
     <label class="row" for="bassVol"><span>Styrkur bassans</span><input type="range" id="bassVol" min="0" max="100" step="5" value="80"></label>
     <div class="row"><span>Tab á skjá<small>Fylgja: stórt letur sem fylgir spiluninni. Allt: allt lagið á einum skjá.</small></span><div class="segw" role="group" aria-label="Tab á skjá"><button id="sFollow">Fylgja</button><button id="sFit">Allt</button></div></div>
-    <div class="row"><span>Útlit<small>Gildir um öll lög á þessu tæki</small></span><div class="segw" role="group" aria-label="Útlit"><button id="lkPaper">Pappír</button><button id="lkDark">Dökkt</button></div></div>
+    <div class="row"><span>Útlit<small id="lookNote">Ljóst eins og pappír, eða dökkt allt appið</small></span><div class="segw" role="group" aria-label="Útlit"><button id="lkPaper">Ljóst</button><button id="lkDark">Dökkt</button></div></div>
     <div class="row"><span>Leturstærð<small id="fsNote">Klíptu með tveimur fingrum á skjánum til að stækka eða minnka</small></span><div class="stepper"><button id="fsDn" aria-label="Minna letur">A−</button><b id="fsVal">16</b><button id="fsUp" aria-label="Stærra letur">A+</button></div></div>
     <label class="row" for="optLabels"><span>Strengjaheiti<small>Setja G D A E fremst á hverja línu</small></span><input type="checkbox" id="optLabels" class="sw"></label>
     <label class="row" for="optCompact"><span>Bara tab og kaflaheiti<small>Felur höfund, netföng og annan aukatexta</small></span><input type="checkbox" id="optCompact" class="sw"></label>
@@ -392,9 +411,12 @@ E|------------|-1--1-1-3---|"></textarea>
 <div class="sheetbg" id="gsetBg" hidden>
   <div class="sheetp" role="dialog" aria-label="Stillingar">
     <h3>Stillingar</h3>
-    <div class="row"><span>Útlit<small>Gildir um öll lög á þessu tæki</small></span><div class="segw" role="group" aria-label="Útlit"><button id="gLkPaper">Pappír</button><button id="gLkDark">Dökkt</button></div></div>
+    <div class="row"><span>Útlit<small id="gLookNote">Ljóst eins og pappír, eða dökkt allt appið</small></span><div class="segw" role="group" aria-label="Útlit"><button id="gLkPaper">Ljóst</button><button id="gLkDark">Dökkt</button></div></div>
     <label class="row" for="gBassVol"><span>Styrkur bassans</span><input type="range" id="gBassVol" min="0" max="100" step="5" value="80"></label>
     <div class="row"><span>„Senda í Bassatab“<small>Bókamerki sem sækir tab af síðum eins og Ultimate Guitar</small></span><button class="btn" id="bmOpen">Setja upp</button></div>
+    <div class="row claude-only"><span>Færa lögin í símaappið<small>Afritar öll lögin. Opnaðu svo Bassatab á heimaskjánum → Stillingar → „Sækja lögin“.</small></span><button class="btn primary" id="mvCopy">Afrita lögin</button></div>
+    <div class="row solo-only-row"><span>Sækja lögin úr Claude<small>Í Claude-útgáfunni: Stillingar → „Afrita lögin“. Komdu svo hingað og ýttu á Sækja.</small></span><button class="btn primary" id="mvPaste">Sækja</button></div>
+    <div class="msg" id="mvMsg"></div>
     <div class="row"><span>Öryggisafrit<small>Afritar öll lögin sem texta. Geymdu það t.d. í Glósum.</small></span><button class="btn" id="bkCopy">Afrita</button></div>
     <div class="row"><span>Lesa inn afrit<small>Úr texta eða skrá</small></span><button class="btn" id="bkOpen">Lesa inn</button></div>
     <div class="row"><span>Geymsla<small id="syncSt" class="syncst">Tengist…</small></span></div>
@@ -480,6 +502,12 @@ const STAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentCo
 const FMETA = (() => { try { const v = JSON.parse(localStorage.getItem('bassatab.folders') || '{}'); return { folders: Array.isArray(v.folders) ? v.folders.filter(x => typeof x === 'string').map(x => x.slice(0, 40)) : [], updated: Number(v.updated) || 0 }; } catch(e){ return { folders: [], updated: 0 }; } })();
 function saveFolders(){ FMETA.updated = Date.now(); try { localStorage.setItem('bassatab.folders', JSON.stringify(FMETA)); } catch(e){} pushMeta(); }
 function allFolders(){ const set = new Set(FMETA.folders); S.songs.forEach(s => { if (s.folder) set.add(s.folder); }); return [...set].sort((a, b) => a.localeCompare(b, 'is')); }
+function applyLook(){
+  const dark = PREFS.look === 'dark';
+  document.documentElement.dataset.look = dark ? 'dark' : 'light';
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.content = dark ? '#161c22' : '#ffffff'; m.removeAttribute('media'); });
+}
+applyLook();
 function savePrefs(){ try { localStorage.setItem('bassatab.prefs', JSON.stringify(PREFS)); } catch(e){} }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 function newSong(o){ return Object.assign({ id: uid(), title: '', artist: '', url: '', raw: '', bpm: 80, bpb: 4, font: null, mode: 'follow', speed: 1, click: false, countIn: true, created: Date.now(), updated: Date.now() }, o); }
@@ -1094,6 +1122,7 @@ async function startSync(){
     try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
     const inApp = (navigator.standalone === true) || matchMedia('(display-mode: standalone)').matches;
     $('installTip').hidden = inApp;
+    $('moveTip').hidden = S.songs.some(s => !s.example);
     return;
   }
   let db = null, user = null;
@@ -1126,6 +1155,7 @@ function syncPlayerUI(){
   $('optClick').checked = !!s.click; $('optCount').checked = !!s.countIn;
   $('optLabels').checked = !!s.labels; $('optCompact').checked = !!s.compact;
   $('lkPaper').setAttribute('aria-pressed', PREFS.look === 'paper'); $('lkDark').setAttribute('aria-pressed', PREFS.look !== 'paper');
+  $('lookNote').textContent = PREFS.look === 'dark' ? 'Dökkt: allt appið dökkt, þægilegt í myrkri og á sviði' : 'Ljóst: hvítt eins og pappír, best í dagsbirtu';
   $('mFollow').setAttribute('aria-pressed', S.mode === 'follow'); $('mFit').setAttribute('aria-pressed', S.mode === 'fit');
   $('bLoop').setAttribute('aria-pressed', S.loop != null);
   $('pFav').setAttribute('aria-pressed', !!s.fav); $('pFav').setAttribute('aria-label', s.fav ? 'Taka úr uppáhalds' : 'Setja í uppáhalds');
@@ -1564,11 +1594,47 @@ $('wLink').onclick = () => { $('fUrl').focus(); $('urlNote').hidden = false; con
 $('libSet').onclick = () => { syncGeneral(); $('gsetBg').hidden = false; };
 $('gsetClose').onclick = () => { $('gsetBg').hidden = true; };
 $('gsetBg').onclick = e => { if (e.target === $('gsetBg')) $('gsetBg').hidden = true; };
-$('gLkPaper').onclick = () => { PREFS.look = 'paper'; savePrefs(); syncGeneral(); };
-$('gLkDark').onclick = () => { PREFS.look = 'dark'; savePrefs(); syncGeneral(); };
+$('gLkPaper').onclick = () => { PREFS.look = 'paper'; savePrefs(); applyLook(); syncGeneral(); };
+$('gLkDark').onclick = () => { PREFS.look = 'dark'; savePrefs(); applyLook(); syncGeneral(); };
 $('gBassVol').oninput = () => { PREFS.bassVol = +$('gBassVol').value / 100; savePrefs(); };
+/* Move songs from the Claude version to the phone app through the clipboard */
+function importBackup(text){
+  const d = JSON.parse(text); const arr = Array.isArray(d) ? d : d && d.songs;
+  if (!Array.isArray(arr)) throw new Error('bad');
+  let added = 0, upd = 0;
+  arr.forEach(s0 => {
+    if (!s0 || typeof s0 !== 'object' || typeof s0.raw !== 'string') return;
+    const s = cleanSong(s0); s.example = false; s.synced = false;
+    const ex = S.songs.find(x => x.id === s.id);
+    if (ex){ Object.assign(ex, s, { updated: Date.now() }); pushSong(ex); upd++; }
+    else { s.updated = Date.now(); S.songs.push(s); pushSong(s); added++; }
+    if (s.folder && !FMETA.folders.includes(s.folder)) FMETA.folders.push(s.folder);
+  });
+  if (added || upd){ S.songs = S.songs.filter(x => !x.example); saveFolders(); }
+  persist(); renderLib();
+  return { added, upd };
+}
+async function pasteSongs(msgEl){
+  try {
+    const t = await navigator.clipboard.readText();
+    const r = importBackup(t);
+    msgEl.textContent = r.added + r.upd ? 'Komið: ' + r.added + ' ný lög' + (r.upd ? ', ' + r.upd + ' uppfærð' : '') + '.' : 'Engin lög fundust í því sem var afritað.';
+    if (r.added + r.upd) $('moveTip').hidden = true;
+  } catch(e){
+    msgEl.textContent = 'Fann ekki lögin. Ýttu fyrst á „Afrita lögin“ í Claude-útgáfunni og leyfðu svo Líma þegar síminn spyr.';
+  }
+}
+$('mvPaste').onclick = () => pasteSongs($('mvMsg'));
+$('mvPaste2').onclick = () => pasteSongs($('mvMsg'));
+$('mvCopy').onclick = async () => {
+  const songs = S.songs.filter(s => !s.example);
+  const txt = JSON.stringify({ app: 'bassatab', v: 1, songs: songs.map(bodyOf) });
+  try { await navigator.clipboard.writeText(txt); $('mvMsg').textContent = songs.length + ' lög afrituð. Opnaðu nú Bassatab á heimaskjánum → Stillingar → Sækja.'; }
+  catch(e){ $('bkBg').hidden = false; $('bkText').value = txt; $('bkText').select(); $('bkMsg').textContent = 'Afritaðu þennan texta (allan) og límdu hann í „Lesa inn afrit“ í símaappinu.'; }
+};
 function syncGeneral(){
   $('gLkPaper').setAttribute('aria-pressed', PREFS.look === 'paper'); $('gLkDark').setAttribute('aria-pressed', PREFS.look !== 'paper');
+  $('gLookNote').textContent = PREFS.look === 'dark' ? 'Dökkt: allt appið dökkt, þægilegt í myrkri og á sviði' : 'Ljóst: hvítt eins og pappír, best í dagsbirtu';
   $('gBassVol').value = Math.round(PREFS.bassVol * 100);
   $('verInfo').textContent = 'Bassatab' + (window.BASSATAB_VERSION ? ' · útgáfa ' + window.BASSATAB_VERSION : '') + ' · ' + S.songs.length + ' lög';
 }
@@ -1655,7 +1721,7 @@ const setFont = d => setFontPx(Math.round(S.fontPx) + d);
 $('fsDn').onclick = () => setFont(-1); $('fsUp').onclick = () => setFont(1);
 $('optLabels').onchange = () => { S.song.labels = $('optLabels').checked; saveSong(); S.parsed = prepare(S.song); render(); syncPlayerUI(); };
 $('optCompact').onchange = () => { S.song.compact = $('optCompact').checked; saveSong(); S.parsed = prepare(S.song); render(); syncPlayerUI(); };
-const setLook = v => { PREFS.look = v; savePrefs(); render(); syncPlayerUI(); };
+const setLook = v => { PREFS.look = v; savePrefs(); applyLook(); render(); syncPlayerUI(); };
 $('lkPaper').onclick = () => setLook('paper'); $('lkDark').onclick = () => setLook('dark');
 (() => {
   const stage = $('stage'); let pinch = null;
