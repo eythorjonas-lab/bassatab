@@ -2,9 +2,11 @@
 <html lang="is">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-kfrT89K5IUZF+C6H5cf9b8GCw/zLPqcnyUQjZAcZ170=' 'sha256-PRNs7HkZ5kv1R8lpr5DXqWZS2Y+H/KVeM0+28KEedzs=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bassatab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Bassatab">
@@ -254,7 +256,7 @@ html.vv{height:var(--vvh)}
 @media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
 </style>
 
-<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "c90a1ac";</script>
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "991c534";</script>
 </head>
 <body>
 <div id="app">
@@ -452,12 +454,30 @@ const S = {
 };
 
 /* ---------- storage ---------- */
-function load(){ try { const v = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(v)) return v; } catch(e){} return null; }
+function load(){ try { const v = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(v)) return v.filter(o => o && typeof o === 'object').map(cleanSong); } catch(e){} return null; }
+/* Every song from storage, the cloud or a backup file is rebuilt field by field with safe types,
+   so nothing in it can ever become markup, a script or a javascript: link. */
+function cleanSong(o){
+  const str = (v, n) => typeof v === 'string' ? v.slice(0, n) : '';
+  const num = (v, lo, hi, d) => { v = Number(v); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
+  return {
+    id: typeof o.id === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(o.id) ? o.id : uid(),
+    title: str(o.title, 200), artist: str(o.artist, 200),
+    url: typeof o.url === 'string' && /^https?:\/\/[^\s"'<>]+$/i.test(o.url) ? o.url.slice(0, 2000) : '',
+    raw: str(o.raw, 500000),
+    bpm: Math.round(num(o.bpm, 20, 320, 80)), bpb: Math.round(num(o.bpb, 1, 16, 4)),
+    font: o.font == null ? null : num(o.font, 7, 40, null), mode: o.mode === 'fit' ? 'fit' : 'follow',
+    speed: num(o.speed, 0.25, 2, 1), click: !!o.click, countIn: o.countIn !== false, labels: !!o.labels, compact: !!o.compact,
+    fav: !!o.fav, bass: o.bass !== false, folder: str(o.folder, 40), pending: !!o.pending, fetchError: str(o.fetchError, 300),
+    example: !!o.example, synced: !!o.synced,
+    created: num(o.created, 0, 9e15, Date.now()), updated: num(o.updated, 0, 9e15, Date.now())
+  };
+}
 function persist(){ try { localStorage.setItem(KEY, JSON.stringify(S.songs)); } catch(e){} }
-const PREFS = (() => { try { return Object.assign({ look: 'paper', bassVol: 0.8 }, JSON.parse(localStorage.getItem('bassatab.prefs') || '{}')); } catch(e){ return { look: 'paper', bassVol: 0.8 }; } })();
+const PREFS = (() => { try { const v = JSON.parse(localStorage.getItem('bassatab.prefs') || '{}'); return { look: v.look === 'dark' ? 'dark' : 'paper', bassVol: Number.isFinite(+v.bassVol) ? Math.min(1, Math.max(0, +v.bassVol)) : 0.8 }; } catch(e){ return { look: 'paper', bassVol: 0.8 }; } })();
 const STAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
 /* Folders: names are synced through one 'meta' document beside the songs */
-const FMETA = (() => { try { return Object.assign({ folders: [], updated: 0 }, JSON.parse(localStorage.getItem('bassatab.folders') || '{}')); } catch(e){ return { folders: [], updated: 0 }; } })();
+const FMETA = (() => { try { const v = JSON.parse(localStorage.getItem('bassatab.folders') || '{}'); return { folders: Array.isArray(v.folders) ? v.folders.filter(x => typeof x === 'string').map(x => x.slice(0, 40)) : [], updated: Number(v.updated) || 0 }; } catch(e){ return { folders: [], updated: 0 }; } })();
 function saveFolders(){ FMETA.updated = Date.now(); try { localStorage.setItem('bassatab.folders', JSON.stringify(FMETA)); } catch(e){} pushMeta(); }
 function allFolders(){ const set = new Set(FMETA.folders); S.songs.forEach(s => { if (s.folder) set.add(s.folder); }); return [...set].sort((a, b) => a.localeCompare(b, 'is')); }
 function savePrefs(){ try { localStorage.setItem('bassatab.prefs', JSON.stringify(PREFS)); } catch(e){} }
@@ -748,7 +768,7 @@ function solveFit(chunks, aw, ah){
 }
 
 /* ---------- rendering ---------- */
-const esc = s => s.replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 function tabHTML(t){
   const le = t.match(LABEL_RE)[0].length;
   let h = le ? '<span class="lbl">' + esc(t.slice(0, le)) + '</span>' : '';
@@ -803,7 +823,7 @@ function render(){
     S.fontPx = S.song.font || defFont();
     const W = Math.max(16, Math.floor((aw + 2) / (chR * S.fontPx)));
     const s = S.song;
-    html = '<header class="dochead"><h2>' + esc(s.title || 'Án titils') + (s.artist ? ' <span style="font-weight:400">·</span> <b>' + esc(s.artist) + '</b>' : '') + '</h2><p>Bassi · ' + s.bpm + ' BPM · ' + s.bpb + ' slög í takti</p></header>'
+    html = '<header class="dochead"><h2>' + esc(s.title || 'Án titils') + (s.artist ? ' <span style="font-weight:400">·</span> <b>' + esc(s.artist) + '</b>' : '') + '</h2><p>Bassi · ' + esc(s.bpm) + ' BPM · ' + esc(s.bpb) + ' slög í takti</p></header>'
          + '<div class="col">' + layout(S.parsed, W).map(unitHTML).join('') + '</div>';
   }
   sheet.style.fontSize = S.fontPx + 'px';
@@ -1033,13 +1053,13 @@ function onRemote(snap){
     const r = d.data(); if (!r) return;
     if (d.id === 'meta'){
       if ((r.updated || 0) > (FMETA.updated || 0) && Array.isArray(r.folders)){
-        FMETA.folders = r.folders.filter(x => typeof x === 'string'); FMETA.updated = r.updated;
+        FMETA.folders = r.folders.filter(x => typeof x === 'string' && x.trim()).map(x => x.slice(0, 40)).slice(0, 200); FMETA.updated = Number(r.updated) || Date.now();
         try { localStorage.setItem('bassatab.folders', JSON.stringify(FMETA)); } catch(e){}
         changed = true;
       }
       return;
     }
-    if (typeof r.raw === 'string') remote.set(d.id, r);
+    if (typeof r.raw === 'string') remote.set(d.id, cleanSong(Object.assign({}, r, { id: d.id })));
   });
   for (const [id, r] of remote){
     const l = S.songs.find(s => s.id === id);
@@ -1150,8 +1170,8 @@ function renderLib(){
     .filter(s => !q || (s.title + ' ' + s.artist).toLowerCase().includes(q))
     .filter(s => f === 'all' || (f === 'fav' ? s.fav : s.folder === f.slice(2)));
   $('list').innerHTML = list.length ? list.map(s =>
-    '<div class="songrow"><button class="song" data-id="' + s.id + '"><span class="st"><b>' + esc(s.title || 'Án titils') + (s.example ? '<span class="tag">Dæmi</span>' : '') + (s.pending && !s.raw ? '<span class="tag">Sæki tab…</span>' : '') + '</b><span>' + esc(s.artist || '—') + (s.folder && !f.startsWith('f:') ? ' · ' + esc(s.folder) : '') + '</span></span><span class="meta">' + s.bpm + ' BPM<br>' + s.bpb + '/4</span></button>'
-    + '<button class="star" data-star="' + s.id + '" aria-pressed="' + !!s.fav + '" aria-label="' + (s.fav ? 'Taka úr uppáhalds' : 'Setja í uppáhalds') + '">' + STAR_SVG + '</button></div>'
+    '<div class="songrow"><button class="song" data-id="' + esc(s.id) + '"><span class="st"><b>' + esc(s.title || 'Án titils') + (s.example ? '<span class="tag">Dæmi</span>' : '') + (s.pending && !s.raw ? '<span class="tag">Sæki tab…</span>' : '') + '</b><span>' + esc(s.artist || '—') + (s.folder && !f.startsWith('f:') ? ' · ' + esc(s.folder) : '') + '</span></span><span class="meta">' + esc(s.bpm) + ' BPM<br>' + esc(s.bpb) + '/4</span></button>'
+    + '<button class="star" data-star="' + esc(s.id) + '" aria-pressed="' + !!s.fav + '" aria-label="' + (s.fav ? 'Taka úr uppáhalds' : 'Setja í uppáhalds') + '">' + STAR_SVG + '</button></div>'
   ).join('') : '<div class="empty">' + (q ? 'Ekkert lag passar við leitina.' : f === 'fav' ? 'Engin uppáhaldslög ennþá. Ýttu á stjörnuna við lag.' : f.startsWith('f:') ? 'Þessi mappa er tóm. Opnaðu lag, ýttu á blýantinn og veldu möppuna, eða búðu til nýtt tab hér.' : 'Ekkert tab ennþá. Ýttu á „Nýtt tab“ og límdu inn.') + '</div>';
   const fa = $('folderAct');
   if (f.startsWith('f:')){
@@ -1309,7 +1329,11 @@ function setShotBusy(b){ const l = $('shotBtn'); l.setAttribute('aria-disabled',
 /* ---------- import from files: text, PDF, images ---------- */
 const isImg = f => /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|heic|heif)$/i.test(f.name);
 const isPdf = f => /pdf/.test(f.type) || /\.pdf$/i.test(f.name);
-function loadScript(src){ return new Promise((ok, no) => { if (document.querySelector('script[src="' + src + '"]')) return ok(); const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => no(new Error('load')); document.head.appendChild(s); }); }
+const SRI = {
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js': 'sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e',
+  'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js': 'sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F'
+};
+function loadScript(src){ return new Promise((ok, no) => { if (document.querySelector('script[src="' + src + '"]')) return ok(); const s = document.createElement('script'); if (SRI[src]){ s.integrity = SRI[src]; s.crossOrigin = 'anonymous'; } s.referrerPolicy = 'no-referrer'; s.src = src; s.onload = ok; s.onerror = () => no(new Error('load')); document.head.appendChild(s); }); }
 function appendRaw(text, name){
   const tab = clean(text); if (!tab) return false;
   const cur = $('fRaw').value.trim();
@@ -1322,7 +1346,7 @@ async function pdfToText(file){
   const V = '3.11.174';
   await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@' + V + '/build/pdf.min.js');
   const lib = window.pdfjsLib; lib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + V + '/build/pdf.worker.min.js';
-  const doc = await lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const doc = await lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false, disableFontFace: true, enableXfa: false }).promise;
   const pages = [];
   for (let i = 1; i <= doc.numPages; i++){ const pg = await doc.getPage(i); pages.push((await pg.getTextContent()).items.filter(it => it.str && it.str.length)); }
   const all = pages.flat();
@@ -1536,7 +1560,7 @@ document.addEventListener('paste', e => {
 $('shotFile').onchange = () => importFiles($('shotFile').files);
 $('docFile').onchange = () => { importFiles($('docFile').files).finally(() => { $('docFile').value = ''; }); };
 $('wPaste').onclick = () => { $('fRaw').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('fRaw').focus(); shotMsg('Haltu fingri í stóra reitnum og veldu Líma (á tölvu: Cmd+V).', 'ok'); };
-$('wLink').onclick = () => { $('fUrl').focus(); $('urlNote').hidden = false; $('urlOpen').href = $('fUrl').value.trim() || '#'; };
+$('wLink').onclick = () => { $('fUrl').focus(); $('urlNote').hidden = false; const u = $('fUrl').value.trim(); $('urlOpen').href = /^https?:\/\/\S+$/i.test(u) ? u : '#'; };
 $('libSet').onclick = () => { syncGeneral(); $('gsetBg').hidden = false; };
 $('gsetClose').onclick = () => { $('gsetBg').hidden = true; };
 $('gsetBg').onclick = e => { if (e.target === $('gsetBg')) $('gsetBg').hidden = true; };
@@ -1671,7 +1695,7 @@ $('bkDo').onclick = () => {
     const d = JSON.parse($('bkText').value); const arr = Array.isArray(d) ? d : d.songs;
     if (!Array.isArray(arr)) throw 0;
     let added = 0, upd = 0;
-    arr.forEach(s => { if (!s || typeof s.raw !== 'string') return; const ex = S.songs.find(x => x.id === s.id); if (ex){ Object.assign(ex, s, { updated: Date.now() }); pushSong(ex); upd++; } else { const n = newSong(s); n.synced = false; n.updated = Date.now(); S.songs.push(n); pushSong(n); added++; } });
+    arr.forEach(s0 => { if (!s0 || typeof s0 !== 'object' || typeof s0.raw !== 'string') return; const s = cleanSong(s0); const ex = S.songs.find(x => x.id === s.id); if (ex){ Object.assign(ex, s, { updated: Date.now() }); pushSong(ex); upd++; } else { const n = newSong(s); n.synced = false; n.updated = Date.now(); S.songs.push(n); pushSong(n); added++; } });
     persist(); renderLib(); $('bkMsg').textContent = added + ' ný lög, ' + upd + ' uppfærð.';
   } catch(e){ $('bkMsg').textContent = 'Þetta er ekki gilt öryggisafrit. Afritaðu allan textann úr „Afrita öryggisafrit“.'; }
 };
