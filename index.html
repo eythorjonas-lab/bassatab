@@ -2,7 +2,7 @@
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-ir9cj4tth5hJBCovrt+UaSgETjXtcPqY3QfqKbbKn+I=' 'sha256-0FHwpQZXGu0crg3fi2Dg4UByzryojWj3HacXA0fV7rI=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-9J8OkFHWiYP82c0ZQmPwwj7MRVz3kUaZs6A7lag8H1s=' 'sha256-f6S/scSIGu1D7QI0jLxISjryBXeHKtvaz7pFBh5ul18=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bassatab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -244,14 +244,10 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .rowin{display:flex;align-items:stretch;background:var(--panel);position:relative;z-index:1;transition:transform .2s ease;will-change:transform}
 .songrow .song{border-top:0;flex:1;min-width:0}
 .swipedel{position:absolute;top:0;right:0;bottom:0;width:96px;background:var(--danger);color:#fff;font-weight:700;font-size:15px}
-@media (hover:none){.del{display:none}}
 .star{width:48px;flex:none;display:grid;place-items:center;color:var(--dim)}
 .star svg{width:22px;height:22px;fill:none}
 .star[aria-pressed="true"]{color:var(--accent)}
 .star[aria-pressed="true"] svg{fill:currentColor}
-.del{width:44px;flex:none;display:grid;place-items:center;color:var(--dim)}
-.del svg{width:20px;height:20px}
-.del.arm{width:auto;padding:0 12px;background:var(--danger);color:#fff;font-weight:700;font-size:13px}
 .folderact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .field select{height:42px;border-radius:10px;border:1px solid var(--line);background:var(--panel);padding:0 10px;min-width:0;width:100%}
 .lbl-short{display:none}
@@ -280,7 +276,7 @@ html.vv{height:var(--vvh)}
 @media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
 </style>
 
-<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "b92d490";</script>
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "dd65795";</script>
 </head>
 <body>
 <div id="app">
@@ -502,7 +498,6 @@ function cleanSong(o){
 }
 function persist(){ try { localStorage.setItem(KEY, JSON.stringify(S.songs)); } catch(e){} }
 const PREFS = (() => { try { const v = JSON.parse(localStorage.getItem('bassatab.prefs') || '{}'); return { look: v.look === 'dark' ? 'dark' : 'paper', bassVol: Number.isFinite(+v.bassVol) ? Math.min(1, Math.max(0, +v.bassVol)) : 0.8 }; } catch(e){ return { look: 'paper', bassVol: 0.8 }; } })();
-const TRASH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
 const STAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
 /* Folders: names are synced through one 'meta' document beside the songs */
 const FMETA = (() => { try { const v = JSON.parse(localStorage.getItem('bassatab.folders') || '{}'); return { folders: Array.isArray(v.folders) ? v.folders.filter(x => typeof x === 'string').map(x => x.slice(0, 40)) : [], updated: Number(v.updated) || 0 }; } catch(e){ return { folders: [], updated: 0 }; } })();
@@ -1205,7 +1200,6 @@ function renderLib(){
     .filter(s => f === 'all' || (f === 'fav' ? s.fav : s.folder === f.slice(2)));
   $('list').innerHTML = list.length ? list.map(s =>
     '<div class="songrow"><button class="swipedel" data-swdel="' + esc(s.id) + '" tabindex="-1">Eyða</button><div class="rowin"><button class="song" data-id="' + esc(s.id) + '"><span class="st"><b>' + esc(s.title || 'Án titils') + (s.example ? '<span class="tag">Dæmi</span>' : '') + (s.pending && !s.raw ? '<span class="tag">Sæki tab…</span>' : '') + '</b><span>' + esc(s.artist || '—') + (s.folder && !f.startsWith('f:') ? ' · ' + esc(s.folder) : '') + '</span></span><span class="meta">' + esc(s.bpm) + ' BPM<br>' + esc(s.bpb) + '/4</span></button>'
-    + (S.delArm === s.id ? '<button class="del arm" data-del="' + esc(s.id) + '" aria-label="Staðfesta: eyða laginu">Eyða?</button>' : '<button class="del" data-del="' + esc(s.id) + '" aria-label="Eyða laginu ' + esc(s.title || '') + '">' + TRASH_SVG + '</button>')
     + '<button class="star" data-star="' + esc(s.id) + '" aria-pressed="' + !!s.fav + '" aria-label="' + (s.fav ? 'Taka úr uppáhalds' : 'Setja í uppáhalds') + '">' + STAR_SVG + '</button></div></div>'
   ).join('') : '<div class="empty">' + (q ? 'Ekkert lag passar við leitina.' : f === 'fav' ? 'Engin uppáhaldslög ennþá. Ýttu á stjörnuna við lag.' : f.startsWith('f:') ? 'Þessi mappa er tóm. Opnaðu lag, ýttu á blýantinn og veldu möppuna, eða búðu til nýtt tab hér.' : 'Ekkert tab ennþá. Ýttu á „Nýtt tab“ og límdu inn.') + '</div>';
   const fa = $('folderAct');
@@ -1580,14 +1574,6 @@ $('list').onclick = e => {
   const open = e.target.closest('.rowin.open');
   if (open){ S.closeSwipes(); return; }
   if ($('list').querySelector('.rowin.open')){ S.closeSwipes(); return; }
-  const dl = e.target.closest('[data-del]');
-  if (dl){
-    const id = dl.dataset.del; clearTimeout(S.delT);
-    if (S.delArm === id){
-      S.delArm = null; removeRemote(id); S.songs = S.songs.filter(x => x.id !== id); persist(); renderLib();
-    } else { S.delArm = id; renderLib(); S.delT = setTimeout(() => { S.delArm = null; renderLib(); }, 4000); }
-    return;
-  }
   const st = e.target.closest('[data-star]');
   if (st){ const s = S.songs.find(x => x.id === st.dataset.star); if (s){ toggleFav(s); renderLib(); } return; }
   const b = e.target.closest('.song'); if (!b) return; const s = S.songs.find(x => x.id === b.dataset.id); if (s) openPlayer(s);
