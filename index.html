@@ -2,7 +2,7 @@
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-wxy3FrR01+Ey1L5tlIrRZcctzKh2/V0jecGnABxQXSU=' 'sha256-KpFj6CyGxrH8gi/XieZ/hPiytnRnTFfPSL8S4IDna6o=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://eythors-mac-mini.tail295d9f.ts.net https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-M30WD6mlQIIu0ZAn4qpjOMm1Et5LLDSrHBQCbVHGMyQ=' 'sha256-31n0yG61EjxIGuTx0If+NabjZqQPW5p7h2vQpC1HIsM=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://eythors-mac-mini.tail295d9f.ts.net https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bassatab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -288,7 +288,7 @@ html.vv{height:var(--vvh)}
 @media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
 </style>
 
-<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "a2540dc";</script>
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "87948f1";</script>
 </head>
 <body>
 <div id="app">
@@ -321,7 +321,7 @@ html.vv{height:var(--vvh)}
       <div class="form">
         <div class="field full sfind" id="sFind">
           <label for="fSearch"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="color:var(--accent)"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Leita að tabi</label>
-          <div class="urlrow"><input id="fSearch" type="search" enterkeyhint="search" placeholder="Lag eða flytjandi" autocomplete="off" autocorrect="off" spellcheck="false"><button class="btn primary" id="searchBtn" type="button">Leita</button></div>
+          <div class="urlrow"><input id="fSearch" type="search" enterkeyhint="search" placeholder="Lag, flytjandi eða YouTube-hlekkur" autocomplete="off" autocorrect="off" spellcheck="false"><button class="btn primary" id="searchBtn" type="button">Leita</button></div>
           <div class="skinds" id="sKinds" role="group" aria-label="Tegund"><button type="button" data-kind="bass" aria-pressed="true">Bassi</button><button type="button" data-kind="guitar" aria-pressed="false">Gítar</button><button type="button" data-kind="chords" aria-pressed="false">Hljómar</button></div>
           <div class="fetchmsg" id="searchMsg" role="status"></div>
           <div class="sres" id="sRes"></div>
@@ -341,7 +341,7 @@ html.vv{height:var(--vvh)}
         <div class="field"><label for="fTitle">Heiti lags</label><input id="fTitle" autocomplete="off"></div>
         <div class="field"><label for="fArtist">Flytjandi</label><input id="fArtist" autocomplete="off"></div>
         <div class="field full"><label for="fUrl">Hlekkur á tabið</label>
-          <div class="urlrow"><input id="fUrl" type="url" inputmode="url" placeholder="Límdu hlekk á tab-síðu, t.d. Ultimate Guitar" autocomplete="off"><button class="btn primary" id="fetchBtn" type="button">Sækja tab</button></div>
+          <div class="urlrow"><input id="fUrl" type="url" inputmode="url" placeholder="Hlekkur á tab-síðu eða YouTube" autocomplete="off"><button class="btn primary" id="fetchBtn" type="button">Sækja tab</button></div>
           <div class="fetchmsg" id="fetchMsg" role="status"></div>
         </div>
         <div class="field full" id="urlNote" hidden><a id="urlOpen" href="#" target="_blank" rel="noopener noreferrer">Opna síðuna ↗</a></div>
@@ -1336,6 +1336,7 @@ function searchMsg(t, cls){ const el = $('searchMsg'); el.textContent = t; el.cl
 const KIND_IS = { 'Bass Tabs': 'Bassatab', 'Tabs': 'Gítartab', 'Chords': 'Hljómar', 'Ukulele Chords': 'Úkúlele' };
 async function searchTabs(){
   const q = $('fSearch').value.trim();
+  if (isYouTube(q)){ $('fUrl').value = q; $('fSearch').value = ''; searchMsg(''); updateUrlNote(); fetchFromUrl(); $('fetchMsg').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
   if (q.length < 2){ searchMsg('Skrifaðu nafn lags eða flytjanda.', 'err'); $('fSearch').focus(); return; }
   const my = ++searchSeq; $('fSearch').blur();
   $('searchBtn').disabled = true; $('sRes').textContent = ''; searchMsg('Leita…');
@@ -1379,8 +1380,44 @@ function fillFromReader(j, url){
   fetchMsg('Tabið er komið inn' + (info && info.title ? ': ' + info.title : '') + '. Ýttu á „Vista og spila“.', 'ok');
 }
 let fetchSeq = 0;
+/* Bassaeyrað (Mac mini): YouTube-hlekkur -> hljóð -> bassinn einangraður -> nótur -> bassatab */
+const EYRA_API = TAB_API.replace(/\/tab$/, '/eyra');
+function isYouTube(u){ return /^https?:\/\/(www\.|m\.|music\.)?(youtube\.com\/(watch\?|shorts\/)|youtu\.be\/)\S+$/i.test(String(u).trim()); }
+async function eyraFetch(url, my){
+  const opts = { credentials: 'omit', referrerPolicy: 'no-referrer' };
+  const start = await fetch(EYRA_API + '?yt=' + encodeURIComponent(url), opts).then(r => r.json()).catch(() => null);
+  if (!start || !start.ok || !/^[A-Za-z0-9_-]{11}$/.test(String(start.job))) throw { code: 'reader', msg: (start && start.error) || 'Bassaeyrað svaraði ekki.' };
+  const t0 = Date.now();
+  for (;;){
+    await new Promise(r => setTimeout(r, 3000));
+    if (my !== fetchSeq) return null;
+    const st = await fetch(EYRA_API + '/status?job=' + start.job, opts).then(r => r.json()).catch(() => null);
+    if (!st) continue;
+    if (st.done){ if (!st.ok) throw { code: 'reader', msg: st.error || 'Bassaeyrað náði ekki laginu.' }; return st; }
+    const sec = Math.round((Date.now() - t0) / 1000);
+    fetchMsg('Bassaeyrað hlustar á lagið: ' + String(st.msg || '') + (st.pct ? ' (' + Math.round(+st.pct || 0) + '%)' : '') + ' · ' + sec + ' sek. Þetta tekur 2–5 mínútur.');
+    if (Date.now() - t0 > 30 * 60000) throw { code: 'reader', msg: 'Bassaeyrað tók of langan tíma.' };
+  }
+}
+
 async function fetchFromUrl(){
   const url = $('fUrl').value.trim();
+  if (STANDALONE && isYouTube(url)){
+    const my = ++fetchSeq, btn = $('fetchBtn'); btn.disabled = true; btn.textContent = 'Hlusta…';
+    fetchMsg('Sendi lagið til Bassaeyrans…');
+    try {
+      const j = await eyraFetch(url, my);
+      if (j && my === fetchSeq){
+        fillFromReader({ title: j.title, artist: j.artist, type: 'Bass Tabs', tab: String(j.tab || '') }, url);
+        if (j.title) $('fTitle').value = String(j.title).slice(0, 120);
+        if (j.artist) $('fArtist').value = String(j.artist).slice(0, 120);
+        if (j.tempo >= 30 && j.tempo <= 300){ $('fBpm').value = Math.round(j.tempo); }
+        fetchMsg('Bassaeyrað skrifaði tabið' + (j.title ? ': ' + j.title : '') + '. Þetta er vélræn umritun, svo skoðaðu það og ýttu á „Vista og spila“.', 'ok');
+      }
+    } catch(e){ if (my === fetchSeq) fetchMsg((e && e.msg) || 'Bassaeyrað náði ekki laginu.', 'err'); }
+    finally { if (my === fetchSeq){ btn.disabled = false; btn.textContent = 'Sækja tab'; } }
+    return;
+  }
   if (!/^https?:\/\/\S+$/i.test(url)){ fetchMsg('Límdu fyrst hlekk sem byrjar á https://', 'err'); $('fUrl').focus(); return; }
   const my = ++fetchSeq;
   const btn = $('fetchBtn'); btn.disabled = true; btn.textContent = 'Sæki…';
@@ -1798,7 +1835,7 @@ $('fUrl').oninput = () => {
   updateUrlNote();
   clearTimeout(urlT);
   if (/^https?:\/\/\S+\.\S+/i.test($('fUrl').value.trim())) urlT = setTimeout(fetchFromUrl, 400);
-  const info = slugInfo($('fUrl').value.trim());
+  const info = isYouTube($('fUrl').value) ? {} : slugInfo($('fUrl').value.trim());
   if (info.title && !$('fTitle').value) $('fTitle').value = info.title;
   if (info.artist && !$('fArtist').value) $('fArtist').value = info.artist;
 };
