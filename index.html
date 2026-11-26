@@ -2,7 +2,7 @@
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-iLxwyMk6ztYEAJvFrz3D0f+smQe1FgEShqc5JDRFbVY=' 'sha256-IG+8Ezem5P7OJ77wDFob69LHtp5ut1wmB+/9bTkU9QA=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://bassatab-tablesari.vercel.app https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CRW2Kw2dKPVrAS5cW/rEo0nKKdPdRV9evNzGTlWdQ5o=' 'sha256-0p62ecOXQrTlOF8Lk8tiTVaJ+VXhSNM4ht7ICnWbbSw=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://eythors-mac-mini.tail295d9f.ts.net https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bassatab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -276,7 +276,7 @@ html.vv{height:var(--vvh)}
 @media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
 </style>
 
-<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "3e5266c";</script>
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "f6393a0";</script>
 </head>
 <body>
 <div id="app">
@@ -1308,7 +1308,7 @@ function titleFromPage(text){
 }
 function fetchMsg(t, cls){ const el = $('fetchMsg'); el.textContent = t; el.className = 'fetchmsg' + (cls ? ' ' + cls : ''); }
 /* Our own tab reader (tablesari/api/tab.js, runs on Vercel): link in → tab text out */
-const TAB_API = 'https://bassatab-tablesari.vercel.app/api/tab';
+const TAB_API = 'https://eythors-mac-mini.tail295d9f.ts.net/api/tab';   // tab-lesarinn á Mac mini (tablesari/server.mjs + Tailscale Funnel)
 async function readerFetch(url){
   const r = await fetch(TAB_API + '?url=' + encodeURIComponent(url), { credentials: 'omit', referrerPolicy: 'no-referrer' });
   const j = await r.json().catch(() => ({ ok: false, error: 'Tab-lesarinn svaraði ekki rétt.' }));
