@@ -2,7 +2,7 @@
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-wVpIAdEdmvwimBjX0w7Bh2ezh0A6mUYFZNyKrPkcdF4=' 'sha256-VjLvblOIYXmX00bUdsnzyMYm9T5scBK7lEkqkdfWlpA=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-iLxwyMk6ztYEAJvFrz3D0f+smQe1FgEShqc5JDRFbVY=' 'sha256-IG+8Ezem5P7OJ77wDFob69LHtp5ut1wmB+/9bTkU9QA=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://bassatab-tablesari.vercel.app https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bassatab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -276,7 +276,7 @@ html.vv{height:var(--vvh)}
 @media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
 </style>
 
-<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "b7d3164";</script>
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "3e5266c";</script>
 </head>
 <body>
 <div id="app">
@@ -322,15 +322,10 @@ html.vv{height:var(--vvh)}
         <div class="field"><label for="fTitle">Heiti lags</label><input id="fTitle" autocomplete="off"></div>
         <div class="field"><label for="fArtist">Flytjandi</label><input id="fArtist" autocomplete="off"></div>
         <div class="field full"><label for="fUrl">Hlekkur á tabið</label>
-          <div class="urlrow"><input id="fUrl" type="url" inputmode="url" placeholder="Límdu hlekk, t.d. af Ultimate Guitar" autocomplete="off"><button class="btn primary claude-only" id="fetchBtn" type="button">Sækja tab</button></div>
+          <div class="urlrow"><input id="fUrl" type="url" inputmode="url" placeholder="Límdu hlekk á tab-síðu, t.d. Ultimate Guitar" autocomplete="off"><button class="btn primary" id="fetchBtn" type="button">Sækja tab</button></div>
           <div class="fetchmsg" id="fetchMsg" role="status"></div>
         </div>
-        <div class="field full" id="urlNote" hidden><div class="note">
-          <span class="solo-only"><b>Svona færðu tabið af síðunni inn:</b><ol><li>Opnaðu síðuna með tabinu í Safari.</li><li>Opnaðu bókamerkin og ýttu á „Senda í Bassatab“. Tabið afritast.</li><li>Komdu aftur í Bassatab og límdu í stóra reitinn.</li></ol><a href="#" class="bmOpen3">Setja upp „Senda í Bassatab“</a></span>
-          <span class="claude-only"><b>Svona færðu tabið af hlekknum inn:</b>
-          <ol><li><a id="urlOpen" href="#" target="_blank" rel="noopener">Opnaðu síðuna ↗</a></li><li>Taktu skjáskot af tabinu. Ef það er langt, taktu fleiri skjáskot niður síðuna.</li><li>Komdu aftur hingað og ýttu á „Velja skjáskot“.</li></ol>
-          Fljótlegast: notaðu „Senda í Bassatab“ hnappinn á síðunni og límdu svo hér. <a href="#" id="bmOpen2">Setja upp hnappinn</a></span>
-        </div></div>
+        <div class="field full" id="urlNote" hidden><a id="urlOpen" href="#" target="_blank" rel="noopener noreferrer">Opna síðuna ↗</a></div>
         <div class="field"><label for="fBpm">Tempó (BPM)</label><input id="fBpm" type="number" inputmode="numeric" min="20" max="320" value="80"></div>
         <div class="field"><label for="fBpb">Slög á milli |</label><input id="fBpb" type="number" inputmode="numeric" min="1" max="16" value="4"></div>
         <div class="field full"><label for="fFolder">Mappa</label><select id="fFolder"></select><input id="fFolderNew" placeholder="Heiti nýrrar möppu" autocomplete="off" hidden style="margin-top:8px"></div>
@@ -413,7 +408,6 @@ E|------------|-1--1-1-3---|"></textarea>
     <h3>Stillingar</h3>
     <div class="row"><span>Útlit<small id="gLookNote">Ljóst eins og pappír, eða dökkt allt appið</small></span><div class="segw" role="group" aria-label="Útlit"><button id="gLkPaper">Ljóst</button><button id="gLkDark">Dökkt</button></div></div>
     <label class="row" for="gBassVol"><span>Styrkur bassans</span><input type="range" id="gBassVol" min="0" max="100" step="5" value="80"></label>
-    <div class="row"><span>„Senda í Bassatab“<small>Bókamerki sem sækir tab af síðum eins og Ultimate Guitar</small></span><button class="btn" id="bmOpen">Setja upp</button></div>
     <div class="row"><span>Senda lögin<small>Vistar öll lögin í eina skrá, bassatab-log.json. Opnaðu hana svo í hinu appinu. Þetta er líka öryggisafrit.</small></span><button class="btn primary" id="xSend">Senda</button></div>
     <div class="row"><span>Taka á móti lögum<small>Veldu skrána, eða límdu lögin. Lög sem eru til uppfærast og ný bætast við.</small></span><button class="btn primary" id="xRecv">Taka á móti</button></div>
     <div class="msg" id="mvMsg"></div>
@@ -1313,12 +1307,32 @@ function titleFromPage(text){
   return b ? { title: niceCase(b[1].replace(/\s+(bass|tabs?)$/i, '')), artist: b[2].trim() } : null;
 }
 function fetchMsg(t, cls){ const el = $('fetchMsg'); el.textContent = t; el.className = 'fetchmsg' + (cls ? ' ' + cls : ''); }
+/* Our own tab reader (tablesari/api/tab.js, runs on Vercel): link in → tab text out */
+const TAB_API = 'https://bassatab-tablesari.vercel.app/api/tab';
+async function readerFetch(url){
+  const r = await fetch(TAB_API + '?url=' + encodeURIComponent(url), { credentials: 'omit', referrerPolicy: 'no-referrer' });
+  const j = await r.json().catch(() => ({ ok: false, error: 'Tab-lesarinn svaraði ekki rétt.' }));
+  if (!j || !j.ok) throw { code: 'reader', msg: (j && j.error) || 'Ekki tókst að sækja tabið.' };
+  return j;
+}
+function fillFromReader(j, url){
+  const raw = String(j.tab || ''); const tab = (j.type ? clean(raw) : (extractTab(raw) || clean(raw)));
+  $('fRaw').value = tab; delete $('fBpm').dataset.touched; $('fRaw').dispatchEvent(new Event('input')); updateSum();
+  const info = (j.title ? { title: niceCase(String(j.title)), artist: String(j.artist || '') } : null) || detectTitle(tab) || slugInfo(url);
+  if (info){ if (info.title && !$('fTitle').value.trim()) $('fTitle').value = info.title; if (info.artist && !$('fArtist').value.trim()) $('fArtist').value = info.artist; }
+  $('urlNote').hidden = true;
+  fetchMsg('Tabið er komið inn' + (info && info.title ? ': ' + info.title : '') + '. Ýttu á „Vista og spila“.', 'ok');
+}
+let fetchSeq = 0;
 async function fetchFromUrl(){
   const url = $('fUrl').value.trim();
   if (!/^https?:\/\/\S+$/i.test(url)){ fetchMsg('Límdu fyrst hlekk sem byrjar á https://', 'err'); $('fUrl').focus(); return; }
+  const my = ++fetchSeq;
   const btn = $('fetchBtn'); btn.disabled = true; btn.textContent = 'Sæki…';
-  fetchMsg('Opna síðuna og les tabið…');
+  fetchMsg('Sæki tabið af síðunni…');
   try {
+    try { const j = await readerFetch(url); if (my === fetchSeq) fillFromReader(j, url); return; }
+    catch(e){ if (STANDALONE || !(window.claude && window.claude.use)) throw e; }
     let mcp = null;
     try { mcp = window.claude && window.claude.use ? await window.claude.use('mcp') : null; } catch(e){}
     if (!mcp) throw { code: 'no_mcp' };
@@ -1339,11 +1353,13 @@ async function fetchFromUrl(){
   } catch(e){
     const code = e && e.code;
     $('urlNote').hidden = false;
-    if (code === 'no_mcp' || code === 'server_not_connected' || code === 'capability_disabled' || code === 'unavailable')
-      fetchMsg('Hér getur appið ekki opnað síðuna sjálft. Notaðu „Senda í Bassatab“ bókamerkið, skjáskot, eða afritaðu og límdu tabið.', 'err');
+    $('urlOpen').href = url;
+    if (code === 'reader') fetchMsg(e.msg + ' Þú getur líka opnað síðuna og afritað tabið, eða tekið skjáskot.', 'err');
+    else if (code === 'no_mcp' || code === 'server_not_connected' || code === 'capability_disabled' || code === 'unavailable')
+      fetchMsg('Ekki tókst að sækja tabið af síðunni. Opnaðu síðuna og afritaðu tabið, eða taktu skjáskot.', 'err');
     else if (code === 'not_granted' || code === 'consent_required')
       fetchMsg('Appið fékk ekki leyfi til að nota vafrann. Ýttu aftur á „Sækja tab“ og veldu Leyfa.', 'err');
-    else fetchMsg('Ekki tókst að sækja síðuna' + (code ? ' (' + code + ')' : '') + '. Notaðu skjáskot í staðinn, sjá skrefin hér fyrir neðan.', 'err');
+    else fetchMsg('Ekki tókst að sækja síðuna. Athugaðu netsambandið, eða opnaðu síðuna og afritaðu tabið.', 'err');
   } finally { btn.disabled = false; btn.textContent = 'Sækja tab'; }
 }
 
@@ -1606,7 +1622,7 @@ $('eBack').onclick = $('eCancel').onclick = () => { if (S.editing) openPlayer(S.
 $('eSave').onclick = $('eSave2').onclick = saveEditor;
 $('fetchBtn').onclick = fetchFromUrl;
 $('fBpm').addEventListener('input', () => { $('fBpm').dataset.touched = '1'; });
-$('bmOpen').onclick = openBm; $('bmOpen2').onclick = openBm; document.querySelectorAll('.bmOpen3').forEach(a => { a.onclick = openBm; });
+
 $('bmClose').onclick = () => { $('bmBg').hidden = true; };
 $('bmBg').onclick = e => { if (e.target === $('bmBg')) $('bmBg').hidden = true; };
 $('bmLink').onclick = e => { e.preventDefault(); $('bmMsg').textContent = 'Dragðu hnappinn upp í bókamerkjastikuna. Hann virkar á tab-síðunni, ekki hér.'; };
@@ -1625,7 +1641,7 @@ document.addEventListener('paste', e => {
 $('shotFile').onchange = () => importFiles($('shotFile').files);
 $('docFile').onchange = () => { importFiles($('docFile').files).finally(() => { $('docFile').value = ''; }); };
 $('wPaste').onclick = () => { $('fRaw').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('fRaw').focus(); shotMsg('Haltu fingri í stóra reitnum og veldu Líma (á tölvu: Cmd+V).', 'ok'); };
-$('wLink').onclick = () => { $('fUrl').focus(); $('urlNote').hidden = false; const u = $('fUrl').value.trim(); $('urlOpen').href = /^https?:\/\/\S+$/i.test(u) ? u : '#'; };
+$('wLink').onclick = () => { $('fUrl').focus(); fetchMsg('Límdu hlekkinn á tab-síðuna í reitinn. Tabið sækist sjálfkrafa.', 'ok'); };
 $('libSet').onclick = () => { syncGeneral(); $('gsetBg').hidden = false; };
 $('gsetClose').onclick = () => { $('gsetBg').hidden = true; };
 $('gsetBg').onclick = e => { if (e.target === $('gsetBg')) $('gsetBg').hidden = true; };
@@ -1716,8 +1732,11 @@ $('eDel').onclick = () => {
   removeRemote(S.editing.id);
   S.songs = S.songs.filter(s => s !== S.editing); persist(); S.editing = null; renderLib(); show('vLib');
 };
+let urlT;
 $('fUrl').oninput = () => {
   updateUrlNote();
+  clearTimeout(urlT);
+  if (/^https?:\/\/\S+\.\S+/i.test($('fUrl').value.trim())) urlT = setTimeout(fetchFromUrl, 400);
   const info = slugInfo($('fUrl').value.trim());
   if (info.title && !$('fTitle').value) $('fTitle').value = info.title;
   if (info.artist && !$('fArtist').value) $('fArtist').value = info.artist;
@@ -1730,7 +1749,7 @@ let sumT; $('fRaw').oninput = () => {
   takeBookmarkletPaste();
   const v = $('fRaw').value.trim();
   if (!S.editing && !$('fBpm').dataset.touched){ const t = tempoOf(v); $('fBpm').value = t || 80; }
-  if (/^https?:\/\/\S+$/i.test(v)){ $('fUrl').value = v; $('fRaw').value = ''; $('fUrl').oninput(); fetchMsg(STANDALONE ? 'Þetta er hlekkur. Opnaðu síðuna, ýttu á „Senda í Bassatab“ bókamerkið og límdu tabið hér.' : 'Þetta er hlekkur. Ýttu á „Sækja tab“ til að sækja tabið af síðunni.', 'ok'); if (STANDALONE) $('urlNote').hidden = false; $('fetchBtn').focus(); }
+  if (/^https?:\/\/\S+$/i.test(v)){ $('fUrl').value = v; $('fRaw').value = ''; $('fUrl').oninput(); }
   clearTimeout(sumT); sumT = setTimeout(() => { updateSum(); if (!$("fTitle").value.trim()){ const d = detectTitle($("fRaw").value); if (d){ $("fTitle").value = d.title; if (!$("fArtist").value.trim()) $("fArtist").value = d.artist; } } }, 150);
 };
 
