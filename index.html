@@ -2,7 +2,7 @@
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-iZE51g1TBRyQbKVIxxxsqv2SmHpRYnOhG8zkxB8tYxo=' 'sha256-5ldtquwL682JnK/LxaI1sFyNfOunQJndijhk5iFZgqs=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://eythors-mac-mini.tail295d9f.ts.net https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-JSb5dmgL0ee3dfGrv/m0WW/LzT2SjwM2RomFOnyOGWY=' 'sha256-TmUtA3fSHK8V+g/QKHbpO2QLbqBPxy4vES53/y7ZyrM=' 'sha256-hBum8ldWbme15HjSUOGfyoZ5Y/e8Ub8W3h0EkYCh+v8=' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://eythors-mac-mini.tail295d9f.ts.net https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <style>*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bassatab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -230,6 +230,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .row>span{font-weight:500}
 .row small{display:block;color:var(--muted);font-size:12px;font-weight:400}
 .row input[type=range]{width:46%;accent-color:var(--accent)}
+#sheet .c{cursor:pointer}
 .vsel{height:36px;border-radius:10px;border:1px solid var(--line);background:var(--panel);padding:0 8px;max-width:48%;flex:none}
 .stepper{display:flex;align-items:center;gap:4px;background:var(--raise);border-radius:10px}
 .stepper button{width:40px;height:38px;font-weight:700}
@@ -289,7 +290,7 @@ html.vv{height:var(--vvh)}
 @media (max-width:360px){.ib{width:34px;height:40px}.play{width:50px;height:50px}.bpm button{width:30px}.bpm .v{min-width:42px}.bpm .v b{font-size:17px}.brand h1{font-size:19px}.btn{padding:0 12px}}
 </style>
 
-<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "8d89a66";</script>
+<script>window.BASSATAB_STANDALONE = true; window.BASSATAB_VERSION = "6dce4a8";</script>
 </head>
 <body>
 <div id="app">
@@ -408,6 +409,7 @@ E|------------|-1--1-1-3---|"></textarea>
     <h3>Stillingar</h3>
     <label class="row" for="optBass"><span>Bassahljóð<small>Spilar nóturnar í tabinu þegar þú ýtir á play. Í iPhone þarf hljóðrofinn á hliðinni að vera á.</small></span><input type="checkbox" id="optBass" class="sw"></label>
     <label class="row" for="voiceSel"><span>Hljóðfæri<small id="voiceNote">Hljóðið sem spilar tabið</small></span><select id="voiceSel" class="vsel"><option value="fingur">Rafbassi, fingur</option><option value="nogl">Rafbassi, nögl</option><option value="kontra">Kontrabassi</option><option value="synth">Hljóðgervill</option></select></label>
+    <label class="row" for="chordSel" id="chordRow"><span>Hljómar<small>Ýttu á hljóm í laginu til að heyra hann</small></span><select id="chordSel" class="vsel"><option value="gitar">Gítar</option><option value="piano">Píanó</option></select></label>
     <label class="row" for="bassVol"><span>Styrkur bassans</span><input type="range" id="bassVol" min="0" max="100" step="5" value="80"></label>
     <div class="row"><span>Tab á skjá<small>Fylgja: stórt letur sem fylgir spiluninni. Allt: allt lagið á einum skjá.</small></span><div class="segw" role="group" aria-label="Tab á skjá"><button id="sFollow">Fylgja</button><button id="sFit">Allt</button></div></div>
     <div class="row"><span>Útlit<small id="lookNote">Ljóst eins og pappír, eða dökkt allt appið</small></span><div class="segw" role="group" aria-label="Útlit"><button id="lkPaper">Ljóst</button><button id="lkDark">Dökkt</button></div></div>
@@ -517,7 +519,8 @@ function cleanSong(o){
 function persist(){ try { localStorage.setItem(KEY, JSON.stringify(S.songs)); } catch(e){} }
 /* Real bass sounds (FluidR3 GM soundfont, MIT): one recorded note every 3 semitones, loaded when first needed */
 const VOICE_FILES = { fingur: 'sounds/bassi-fingur.json', nogl: 'sounds/bassi-nogl.json', kontra: 'sounds/kontrabassi.json' };
-const PREFS = (() => { try { const v = JSON.parse(localStorage.getItem('bassatab.prefs') || '{}'); return { look: v.look === 'dark' ? 'dark' : 'paper', bassVol: Number.isFinite(+v.bassVol) ? Math.min(1, Math.max(0, +v.bassVol)) : 0.8, voice: VOICE_FILES[v.voice] || v.voice === 'synth' ? v.voice : 'fingur' }; } catch(e){ return { look: 'paper', bassVol: 0.8, voice: 'fingur' }; } })();
+const SOUND_FILES = Object.assign({ gitar: 'sounds/gitar.json', piano: 'sounds/piano.json' }, VOICE_FILES);
+const PREFS = (() => { try { const v = JSON.parse(localStorage.getItem('bassatab.prefs') || '{}'); return { look: v.look === 'dark' ? 'dark' : 'paper', bassVol: Number.isFinite(+v.bassVol) ? Math.min(1, Math.max(0, +v.bassVol)) : 0.8, voice: VOICE_FILES[v.voice] || v.voice === 'synth' ? v.voice : 'fingur', chordVoice: v.chordVoice === 'piano' ? 'piano' : 'gitar' }; } catch(e){ return { look: 'paper', bassVol: 0.8, voice: 'fingur', chordVoice: 'gitar' }; } })();
 const STAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
 /* Folders: names are synced through one 'meta' document beside the songs */
 const FMETA = (() => { try { const v = JSON.parse(localStorage.getItem('bassatab.folders') || '{}'); return { folders: Array.isArray(v.folders) ? v.folders.filter(x => typeof x === 'string').map(x => x.slice(0, 40)) : [], updated: Number(v.updated) || 0 }; } catch(e){ return { folders: [], updated: 0 }; } })();
@@ -583,7 +586,7 @@ function isChord(t){
 }
 /* Positional marks above a stave (e.g. "SOLO      ss    ss", "PM----") keep their columns */
 function isAnnot(t){ return t.length >= 10 && !isTab(t) && (/\S\s{3,}\S/.test(t) || /^\s{6,}\S/.test(t)); }
-const DEF_STRINGS = { 4: ['G','D','A','E'], 5: ['G','D','A','E','B'], 6: ['C','G','D','A','E','B'] };
+const DEF_STRINGS = { 4: ['G','D','A','E'], 5: ['G','D','A','E','B'], 6: ['E','B','G','D','A','E'] };   // 6 lines: guitar
 function tuningOf(raw){
   const m = String(raw).match(/tuning\s*[:\-]?\s*([A-G][#b]?(?:[\s,]+[A-G][#b]?){3,5})\b/i);
   return m ? m[1].trim().split(/[\s,]+/).reverse() : null;   // tab lists highest string on top
@@ -851,6 +854,14 @@ function unitHTML(u){
   return h + '</div>';
 }
 function defFont(){ return window.innerWidth < 600 ? 14 : 18; }
+function kindOf(chunks){
+  let st = 0, gt = 0, ch = 0;
+  chunks.forEach(items => items.forEach(it => {
+    if (it.type === 'stave'){ st++; if (it.lines.filter(l => l.kind === 'tab').length === 6) gt++; }
+    else if (it.kind === 'chord') ch++;
+  }));
+  return !st ? (ch >= 2 ? 'Hljómar' : 'Bassi') : gt * 2 > st ? 'Gítar' : 'Bassi';
+}
 function render(){
   if (!S.song) return;
   const stage = $('stage'), sheet = $('sheet');
@@ -872,7 +883,7 @@ function render(){
     S.fontPx = S.song.font || defFont();
     const W = Math.max(16, Math.floor((aw + 2) / (chR * S.fontPx)));
     const s = S.song;
-    html = '<header class="dochead"><h2>' + esc(s.title || 'Án titils') + (s.artist ? ' <span style="font-weight:400">·</span> <b>' + esc(s.artist) + '</b>' : '') + '</h2><p>Bassi · ' + esc(s.bpm) + ' BPM · ' + esc(s.bpb) + ' slög í takti</p></header>'
+    html = '<header class="dochead"><h2>' + esc(s.title || 'Án titils') + (s.artist ? ' <span style="font-weight:400">·</span> <b>' + esc(s.artist) + '</b>' : '') + '</h2><p>' + kindOf(S.parsed) + ' · ' + esc(s.bpm) + ' BPM · ' + esc(s.bpb) + ' slög í takti</p></header>'
          + '<div class="col">' + layout(S.parsed, W).map(unitHTML).join('') + '</div>';
   }
   sheet.style.fontSize = S.fontPx + 'px';
@@ -885,6 +896,7 @@ function render(){
   S.els = [...sheet.querySelectorAll('.stave')];
   S.els.forEach(el => { el._cur = el.querySelector('.cur'); el._hl = el.querySelector('.barhl'); });
   buildTimeline();
+  S.chordSheet = !S.bars.length && sheet.querySelectorAll('.c').length >= 2;
   S.cur = -1; S.curBar = -1;
   if (S.loop != null && S.loop >= S.staves.length) S.loop = null;
   draw(false);
@@ -937,6 +949,8 @@ function ensureAudio(){
     }
     if (S.ac.state === 'suspended') S.ac.resume();
     if (PREFS.voice !== 'synth') loadVoice(PREFS.voice);
+    if (S.events && S.events.some(e => e.inst === 'guitar')) loadVoice('gitar');
+    if (S.chordSheet || (S.song && /class="c"/.test($('sheet').innerHTML))) loadVoice(PREFS.chordVoice);
   } catch(e){}
 }
 /* Bass voice: saw + sine through a closing lowpass, plucked envelope. One voice per string. */
@@ -945,7 +959,7 @@ function stopVoice(k, t){ const v = VOICES[k]; if (!v) return; try { v.g.gain.ca
 function stopAllVoices(){ if (!S.ac) return; const t = S.ac.currentTime; Object.keys(VOICES).forEach(k => stopVoice(k, t)); }
 const SAMPLES = {};                                 // voice -> { status, buf: {midi: AudioBuffer} }
 function loadVoice(name){
-  const ac = S.ac, file = VOICE_FILES[name];
+  const ac = S.ac, file = SOUND_FILES[name];
   if (!ac || !file) return;
   const cur = SAMPLES[name];
   if (cur && (cur.status === 'ok' || cur.status === 'loading')) return;
@@ -968,14 +982,14 @@ function voiceNote(){
   el.textContent = PREFS.voice === 'synth' ? 'Hljóðið sem spilar tabið' : !r ? 'Hljóðið sem spilar tabið' :
     r.status === 'loading' ? 'Sæki hljóðið…' : r.status === 'fail' ? 'Náði ekki í hljóðið, nota hljóðgervil' : 'Hljóðið sem spilar tabið';
 }
-function pluckSample(ev, t, vol){
-  const r = SAMPLES[PREFS.voice]; if (!r || r.status !== 'ok') return false;
+function pluckSample(ev, t, vol, voice){
+  const r = SAMPLES[voice]; if (!r || r.status !== 'ok') return false;
   const keys = Object.keys(r.buf).map(Number); if (!keys.length) return false;
   let k = keys[0];
   for (const x of keys) if (Math.abs(x - ev.midi) < Math.abs(k - ev.midi)) k = x;
   const ac = S.ac, src = ac.createBufferSource(), g = ac.createGain();
   src.buffer = r.buf[k]; src.playbackRate.value = Math.pow(2, (ev.midi - k) / 12);
-  g.gain.setValueAtTime(0.9 * vol, t); g.gain.setTargetAtTime(0.0001, t + 2.2, 0.25);
+  g.gain.setValueAtTime((ev.gain || 0.9) * vol, t); g.gain.setTargetAtTime(0.0001, t + 2.2, 0.25);
   src.connect(g); g.connect(S.master); src.start(t); src.stop(t + 3.5);
   VOICES[ev.str] = { g, o: [src] };
   return true;
@@ -983,10 +997,11 @@ function pluckSample(ev, t, vol){
 function pluck(ev){
   const ac = S.ac; if (!ac || !S.master) return;
   try {
-    const t = ac.currentTime + 0.004, f = 440 * Math.pow(2, (ev.midi - 69) / 12), vol = Math.max(0, Math.min(1, PREFS.bassVol));
+    const t = ac.currentTime + 0.004 + (ev.dt || 0), f = 440 * Math.pow(2, (ev.midi - 69) / 12), vol = Math.max(0, Math.min(1, PREFS.bassVol));
     if (!vol) return;
     stopVoice(ev.str, t);
-    if (PREFS.voice !== 'synth'){ if (pluckSample(ev, t, vol)) return; loadVoice(PREFS.voice); }
+    const voice = ev.voice || (ev.inst === 'guitar' ? 'gitar' : PREFS.voice);
+    if (voice !== 'synth'){ if (pluckSample(ev, t, vol, voice)) return; loadVoice(voice); }
     const g = ac.createGain(), lp = ac.createBiquadFilter(), o1 = ac.createOscillator(), o2 = ac.createOscillator(), g2 = ac.createGain();
     lp.type = 'lowpass'; lp.Q.value = 1.5;
     lp.frequency.setValueAtTime(Math.min(5000, f * 18), t); lp.frequency.exponentialRampToValueAtTime(Math.max(650, f * 5), t + 0.35);
@@ -1013,7 +1028,11 @@ function stringMidis(st){
   const tabs = st.lines.filter(l => l.kind === 'tab'), n = tabs.length;
   const lab = tabs.map(l => { const m = l.text.match(/^\s*([A-Ga-g])([#b]?)\s*[|:\-]/); return m ? m[1].toUpperCase() + m[2] : null; });
   const names = lab.every(Boolean) ? lab : (S.tuning && S.tuning.length === n ? S.tuning : DEF_STRINGS[n]);
-  return names ? openStrings(names) : null;
+  if (!names) return null;
+  const mid = openStrings(names);
+  // Guitar (E B G D A E): same names as a bass but one octave higher
+  if (mid && n === 6 && names.join('') === 'EBGDAE') return Object.assign(mid.map(m => m + 12), { guitar: true });
+  return mid;
 }
 function buildEvents(){
   const bpb = S.song.bpb, E = [];
@@ -1031,7 +1050,7 @@ function buildEvents(){
           const bi = st.bars.findIndex(b => col >= b.x0 - 0.01 && col < b.x1);
           if (bi < 0) continue;
           const b = st.bars[bi];
-          E.push({ beat: (st.b0 + bi) * bpb + (col - b.x0) / (b.x1 - b.x0) * bpb, midi: base + fret, str: si });
+          E.push({ beat: (st.b0 + bi) * bpb + (col - b.x0) / (b.x1 - b.x0) * bpb, midi: base + fret, str: si, inst: mid.guitar ? 'guitar' : 'bass' });
         }
       }
     });
@@ -1043,6 +1062,38 @@ function playRange(a, b){
   const E = S.events; let lo = 0, hi = E.length;
   while (lo < hi){ const m = (lo + hi) >> 1; if (E[m].beat < a - 1e-9) lo = m + 1; else hi = m; }
   for (let i = lo; i < E.length && E[i].beat < b - 1e-9; i++) pluck(E[i]);
+}
+/* Chords: tap a chord name to hear it, strummed on guitar or played on piano */
+function chordNotes(name){
+  const m = String(name).replace(/[()*]/g, '').replace(/♯/g, '#').replace(/♭/g, 'b').match(/^([A-G])([#b]?)(.*?)(?:\/([A-G])([#b]?))?$/);
+  if (!m) return null;
+  const pc = (l, a) => (NOTE_PC[l] + (a === '#' ? 1 : a === 'b' ? -1 : 0) + 12) % 12;
+  const root = pc(m[1], m[2]), q = m[3];
+  let iv = [0, 4, 7];
+  if (/^(m|mi|min|-)(?!aj)/.test(q)) iv = [0, 3, 7];
+  if (/^(dim|°)/.test(q)) iv = [0, 3, 6];
+  if (/^(aug|\+)/.test(q)) iv = [0, 4, 8];
+  if (/ø|m7b5/.test(q)) iv = [0, 3, 6, 10];
+  if (/sus2/.test(q)) iv = [0, 2, 7]; else if (/sus/.test(q)) iv = [0, 5, 7];
+  if (/(maj|M|Δ)(7|9|11|13)/.test(q)) iv.push(11);
+  else if (/(^|[^d])(7|9|11|13)/.test(q) && !/add/.test(q) && !iv.includes(10)) iv.push(/dim7|°7/.test(q) ? 9 : 10);
+  if (/(^|[^d])6/.test(q) && !/\/6/.test(q)) iv.push(9);
+  if (/#9/.test(q)) iv.push(15); else if (/b9/.test(q)) iv.push(13); else if (/9/.test(q)) iv.push(14);
+  if (/11/.test(q)) iv.push(17);
+  return { root, bass: m[4] ? pc(m[4], m[5]) : root, iv };
+}
+function playChord(name){
+  const c = chordNotes(name); if (!c) return;
+  ensureAudio(); if (!S.ac) return;
+  const voice = PREFS.chordVoice;
+  if (!SAMPLES[voice] || SAMPLES[voice].status !== 'ok') loadVoice(voice);
+  stopAllVoices();
+  const lo = voice === 'piano' ? 36 : 40;                          // bass note: C2.. (piano) / E2.. (guitar)
+  const bass = lo + ((c.bass - (lo % 12)) + 12) % 12, base = bass + ((c.root - c.bass + 12) % 12) + 12;
+  const notes = [bass].concat(c.iv.map(i => base + i));
+  if (voice === 'gitar') notes.push(base + 12);
+  const uniq = [...new Set(notes)].sort((a, b) => a - b);
+  uniq.forEach((midi, i) => pluck({ midi, str: 'c' + i, voice, gain: 0.55, dt: voice === 'gitar' ? i * 0.028 : 0 }));
 }
 function beep(acc){
   const ac = S.ac; if (!ac) return;
@@ -1064,7 +1115,13 @@ function setPlayingUI(){
   $('bPlay').setAttribute('aria-label', S.playing ? 'Gera hlé' : 'Spila');
 }
 function play(){
-  if (!S.bars.length) return;
+  if (!S.bars.length){
+    if (!S.chordSheet) return;
+    ensureAudio();                                                  // chord sheet: scroll the song at its tempo
+    const st = $('stage'); if (st.scrollTop + st.clientHeight >= st.scrollHeight - 2) st.scrollTop = 0;
+    S.playing = true; S.last = performance.now(); S.scrollAcc = st.scrollTop; setPlayingUI(); hideHint();
+    requestAnimationFrame(scrollTick); return;
+  }
   ensureAudio();
   if (S.pos >= S.total) S.pos = 0;
   S.playing = true; S.pre = S.song.countIn ? -S.song.bpb : 0; S.lastClick = null; S.last = performance.now();
@@ -1074,6 +1131,17 @@ function play(){
 }
 function pause(){
   S.playing = false; S.pre = 0; $('countBadge').hidden = true; setPlayingUI(); stopAllVoices();
+}
+function scrollTick(ts){
+  if (!S.playing) return;
+  const st = $('stage'), dt = Math.min(0.1, Math.max(0, (ts - S.last) / 1000)); S.last = ts;
+  const ln = $('sheet').querySelector('.k-text, .k-chord, .ln'), lh = ln ? Math.max(12, ln.getBoundingClientRect().height) : S.fontPx * 1.5;
+  // about one chord line + one lyric line per bar
+  S.scrollAcc += dt * (2 * lh) / (S.song.bpb * 60 / (S.song.bpm * S.song.speed));
+  if (Math.abs(st.scrollTop - S.scrollAcc) > 40) S.scrollAcc = st.scrollTop;     // the user scrolled by hand
+  st.scrollTop = S.scrollAcc;
+  if (st.scrollTop + st.clientHeight >= st.scrollHeight - 1){ pause(); return; }
+  requestAnimationFrame(scrollTick);
 }
 function tick(ts){
   if (!S.playing) return;
@@ -1217,7 +1285,8 @@ function syncPlayerUI(){
   $('mFollow').setAttribute('aria-pressed', S.mode === 'follow'); $('mFit').setAttribute('aria-pressed', S.mode === 'fit');
   $('bLoop').setAttribute('aria-pressed', S.loop != null);
   $('pFav').setAttribute('aria-pressed', !!s.fav); $('pFav').setAttribute('aria-label', s.fav ? 'Taka úr uppáhalds' : 'Setja í uppáhalds');
-  $('optBass').checked = s.bass !== false; $('bassVol').value = Math.round(PREFS.bassVol * 100); $('voiceSel').value = PREFS.voice; voiceNote();
+  $('optBass').checked = s.bass !== false; $('bassVol').value = Math.round(PREFS.bassVol * 100); $('voiceSel').value = PREFS.voice; voiceNote(); $('chordSel').value = PREFS.chordVoice;
+  $('chordRow').hidden = !$('sheet').querySelector('.c');
   $('sFollow').setAttribute('aria-pressed', S.mode === 'follow'); $('sFit').setAttribute('aria-pressed', S.mode === 'fit');
   $('pMode').setAttribute('aria-pressed', S.mode === 'fit');
   S.els.forEach((el, i) => el.classList.toggle('loop', i === S.loop));
@@ -1760,6 +1829,7 @@ function setVoice(v){
   voiceNote();
 }
 $('voiceSel').onchange = () => setVoice($('voiceSel').value);
+$('chordSel').onchange = () => { PREFS.chordVoice = $('chordSel').value === 'piano' ? 'piano' : 'gitar'; savePrefs(); ensureAudio(); loadVoice(PREFS.chordVoice); };
 $('gVoiceSel').onchange = () => setVoice($('gVoiceSel').value);
 $('bassVol').oninput = () => { PREFS.bassVol = +$('bassVol').value / 100; savePrefs(); };
 $('eBack').onclick = $('eCancel').onclick = () => { if (S.editing) openPlayer(S.editing); else show('vLib'); };
@@ -1908,6 +1978,7 @@ $('pEdit').onclick = () => openEditor(S.song);
 $('mFollow').onclick = () => { S.mode = S.song.mode = 'follow'; saveSong(); render(); syncPlayerUI(); if (S.els[S.cur]) followTo(S.els[S.cur]); };
 $('mFit').onclick = () => { S.mode = S.song.mode = 'fit'; saveSong(); $('stage').scrollTop = 0; render(); syncPlayerUI(); };
 $('bPlay').onclick = () => S.playing ? pause() : play();
+$('sheet').addEventListener('click', e => { const c = e.target.closest && e.target.closest('.c'); if (c) playChord(c.textContent); });
 $('bStart').onclick = () => { S.pos = 0; S.pre = S.playing && S.song.countIn ? -S.song.bpb : 0; S.lastClick = null; S.cur = -1; $('stage').scrollTo({ top: 0 }); draw(false); };
 $('bLoop').onclick = () => {
   if (S.loop != null) S.loop = null;
